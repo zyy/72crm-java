@@ -207,6 +207,7 @@ public class AdminFieldService {
                 }else {
                     record.set("value",new ArrayList<>());
                 }
+                record.set("default_value",new ArrayList<>());
             } else if (record.getInt("type") == 12){
                 if(StrUtil.isNotEmpty(record.getStr("value"))){
                     List<Record> deptList = Db.find("select dept_id,name from 72crm_admin_dept where dept_id in ("+record.getStr("value")+")");
@@ -214,6 +215,7 @@ public class AdminFieldService {
                 }else {
                     record.set("value",new ArrayList<>());
                 }
+                record.set("default_value",new ArrayList<>());
             }
         });
         recordToFormType(recordList);
@@ -249,9 +251,11 @@ public class AdminFieldService {
                 recordValueToArray(record);
             } else if (10 == dataType) {
                 record.set("formType", "user");
+                record.set("default_value",new ArrayList<>());
                 //recordValueToArray(record);
             } else if (12 == dataType) {
                 record.set("formType", "structure");
+                record.set("default_value",new ArrayList<>());
                 //recordValueToArray(record);
             } else if (13 == dataType) {
                 record.set("formType", "datetime");
