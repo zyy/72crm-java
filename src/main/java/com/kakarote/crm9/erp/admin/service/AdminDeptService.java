@@ -15,19 +15,23 @@ import java.util.List;
 
 public class AdminDeptService {
     public R setDept(AdminDept adminDept) {
-        boolean bol;
+        boolean bol=false;
         if (adminDept.getDeptId() == null) {
             bol = adminDept.save();
         } else {
             List<Record> deptList = queryDeptTree(null,adminDept.getDeptId());
+            boolean stamp=false;
             for (Record record : deptList){
-                if (!record.getInt("id").equals(adminDept.getDeptId())){
-                    return R.error("上级部门设置不合规");
+                if (record.getInt("id").equals(adminDept.getPid())){
+                    stamp=true;
+                    break;
                 }
             }
-            bol = adminDept.update();
+            if(stamp){
+                bol = adminDept.update();
+            }
         }
-        return bol ? R.ok() : R.error();
+        return R.isSuccess(bol,"设置失败");
     }
 
     public List<Record> queryDeptTree(String type,Integer id) {
