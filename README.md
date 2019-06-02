@@ -17,7 +17,8 @@ JAVA版QQ群交流群①群：[1026560336](https://shang.qq.com/wpa/qunwpa?idkey
 
 微信交流社区
 
-<img src="https://images.gitee.com/uploads/images/2019/0523/093737_8fe49348_345098.png" width="300">
+<img src="https://images.gitee.com/uploads/images/2019/0602/182656_e2c2b620_345098.png" width="300">
+
 
 
 
