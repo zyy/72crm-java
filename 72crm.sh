@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 启动入口类，该脚本文件用于别的项目时要改此处
+# 启动入口类，该脚本文件用于别的项目时要改这里
 MAIN_CLASS=com.kakarote.crm9.Application
 
 if [[ "$MAIN_CLASS" == "com.yourpackage.YourMainClass" ]]; then

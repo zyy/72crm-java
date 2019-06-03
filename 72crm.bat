@@ -10,7 +10,7 @@ rem 2: JAVA_OPTS 可通过 -D 传入 undertow.port 与 undertow.host 这类参�
 rem    配置文件中的相同值此外还有 undertow.resourcePath, undertow.ioThreads
 rem    undertow.workerThreads 共五个参数可通过 -D 进行传入
 rem
-rem 3: JAVA_OPTS 可传入标准的 java 命令行参数，例如 -Xms256m -Xmx1024m 这类常用参数
+rem 3: JAVA_OPTS 可传入标准的 java 命令行参数,例如 -Xms256m -Xmx1024m 这类常用参数
 rem
 rem
 rem -------------------------------------------------------------------------
