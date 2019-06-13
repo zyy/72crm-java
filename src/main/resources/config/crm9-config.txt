@@ -5,7 +5,7 @@ jfinal.devMode = true
 jfinal.redis=MainRedis
 #---------------------------------------------------------
 MainRedis.open = true
-MainRedis.host=192.168.1.116
+MainRedis.host=127.0.0.1
 MainRedis.port=6379
 MainRedis.timeout=20000
 #没有密码直接留空或者将此行删除
