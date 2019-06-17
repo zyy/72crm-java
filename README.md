@@ -13,11 +13,7 @@
 
 演示地址：[demo9java.5kcrm.net](http://demo9java.5kcrm.net/)(帐号：18888888888   密码：123456)
 
-JAVA版QQ群交流群①群：[1026560336](https://shang.qq.com/wpa/qunwpa?idkey=13d5e5809eb9feb350336e55c8b7a00b9cb472078b09b4441222a52dd76b278e)
-
-微信交流社区
-
-<img src="https://images.gitee.com/uploads/images/2019/0613/102602_05027aab_345098.png" width="300">
+ :tw-1f495: **JAVA版QQ群交流群①群** ：[1026560336](https://shang.qq.com/wpa/qunwpa?idkey=13d5e5809eb9feb350336e55c8b7a00b9cb472078b09b4441222a52dd76b278e)
 
 
 
