@@ -15,7 +15,9 @@
 
  :tw-1f495: **JAVA版QQ群交流群①群** ：[1026560336](https://shang.qq.com/wpa/qunwpa?idkey=13d5e5809eb9feb350336e55c8b7a00b9cb472078b09b4441222a52dd76b278e)
 
+微信交流群：
 
+<img src="https://images.gitee.com/uploads/images/2019/0620/194950_6788b838_345098.png" width="400">
 
 
 悟空CRM采用全新的前后端分离模式，本仓库代码中已集成前端vue打包后文件，可免去打包操作
