@@ -261,7 +261,7 @@ export default {
       } else if (this.crmType === 'product') {
         return [
           { name: '产品名称', field: 'name', formType: 'text' },
-          { name: '单位', field: 'unit', formType: 'text' },
+          { name: '单位', field: '单位', formType: 'text' },
           { name: '价格', field: 'price', formType: 'text' },
           { name: '产品类别', field: 'categoryId', formType: 'text' },
           { name: '状态 ', field: 'status', formType: 'text' }

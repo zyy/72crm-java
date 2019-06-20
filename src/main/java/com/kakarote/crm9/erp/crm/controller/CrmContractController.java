@@ -2,6 +2,7 @@ package com.kakarote.crm9.erp.crm.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.jfinal.plugin.activerecord.Page;
 import com.kakarote.crm9.common.annotation.NotNullValidate;
 import com.kakarote.crm9.common.annotation.Permissions;
 import com.kakarote.crm9.common.config.paragetter.BasePageRequest;
@@ -191,4 +192,19 @@ public class CrmContractController extends Controller {
         renderJson(receivablesPlanService.qureyListByContractId(basePageRequest));
     }
 
+    /**
+     * 查询合同到期提醒设置
+     */
+    public void queryContractConfig(){
+        renderJson(crmContractService.queryContractConfig());
+    }
+
+    /**
+     * 修改合同到期提醒设置
+     */
+    @NotNullValidate(value = "status",message = "status不能为空")
+    @NotNullValidate(value = "contractDay",message = "contractDay不能为空")
+    public void setContractConfig(@Para("status") Integer status,@Para("contractDay") Integer contractDay){
+        renderJson(crmContractService.setContractConfig(status,contractDay));
+    }
 }

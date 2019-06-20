@@ -124,10 +124,10 @@ public class OaLogService {
         oaLog.setSendDeptIds(TagUtil.fromString(oaLog.getSendDeptIds()));
         if (oaLog.getLogId() != null) {
             oaLog.update();
-            oaActionRecordService.addRecord(oaLog.getLogId(), OaEnum.LOG_TYPE_KEY.getTypes(), 2, oaActionRecordService.getJoinIds(user.getUserId().intValue(), oaLog.getSendUserIds()), oaActionRecordService.getJoinIds(user.getDeptId(), oaLog.getSendDeptIds()));
+            oaActionRecordService.addRecord(oaLog.getLogId(), OaEnum.LOG_TYPE_KEY.getTypes(), 2, oaActionRecordService.getJoinIds(user.getUserId().intValue(), oaLog.getSendUserIds()),  oaLog.getSendDeptIds());
         } else {
             oaLog.save();
-            oaActionRecordService.addRecord(oaLog.getLogId(), OaEnum.LOG_TYPE_KEY.getTypes(), 1, oaActionRecordService.getJoinIds(user.getUserId().intValue(), oaLog.getSendUserIds()), oaActionRecordService.getJoinIds(user.getDeptId(), oaLog.getSendDeptIds()));
+            oaActionRecordService.addRecord(oaLog.getLogId(), OaEnum.LOG_TYPE_KEY.getTypes(), 1, oaActionRecordService.getJoinIds(user.getUserId().intValue(), oaLog.getSendUserIds()),  oaLog.getSendDeptIds());
         }
         if (oaLogRelation != null) {
             Db.deleteById("72crm_oa_log_relation", "log_id", oaLog.getLogId());

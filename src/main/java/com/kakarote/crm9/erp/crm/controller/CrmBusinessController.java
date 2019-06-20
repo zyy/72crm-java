@@ -42,7 +42,7 @@ public class CrmBusinessController extends Controller {
     @Permissions("crm:business:read")
     @NotNullValidate(value = "businessId",message = "商机id不能为空")
     public void queryById(@Para("businessId")Integer businessId){
-        renderJson(R.ok().put("data",crmBusinessService.queryById(businessId)));
+        renderJson(crmBusinessService.queryById(businessId));
     }
 
     /**
@@ -173,7 +173,7 @@ public class CrmBusinessController extends Controller {
      * 查询商机状态组及商机状态
      */
     public void queryBusinessStatusOptions(){
-        renderJson(R.ok().put("data",crmBusinessService.queryBusinessStatusOptions()));
+        renderJson(R.ok().put("data",crmBusinessService.queryBusinessStatusOptions(null)));
     }
 
     /**

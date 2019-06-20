@@ -198,6 +198,7 @@ public class CrmLeadsController extends Controller {
      */
     public void downloadExcel(){
         List<Record> recordList = crmLeadsService.queryField();
+        recordList.removeIf(record -> "file".equals(record.getStr("formType")) || "checkbox".equals(record.getStr("formType"))|| "user".equals(record.getStr("formType"))|| "structure".equals(record.getStr("formType")));
         HSSFWorkbook wb = new HSSFWorkbook();
         HSSFSheet sheet = wb.createSheet("线索导入表");
         HSSFRow row = sheet.createRow(0);

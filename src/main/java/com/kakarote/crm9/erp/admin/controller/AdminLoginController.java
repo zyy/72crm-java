@@ -16,6 +16,7 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.redis.Redis;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -63,7 +64,7 @@ public class AdminLoginController extends Controller {
                 user.update();
                 user.setRoles(adminRoleService.queryRoleIdsByUserId(user.getUserId()));
                 Redis.use().setex(token, 360000, user);
-                user.remove("password","salt");
+                user.remove("password", "salt");
                 setCookie("Admin-Token", token, 360000);
                 renderJson(R.ok().put("Admin-Token", token).put("user", user).put("auth", adminRoleService.auth(user.getUserId())));
             } else {
@@ -92,13 +93,23 @@ public class AdminLoginController extends Controller {
 
     public void ping() {
         List<String> arrays = new ArrayList<>();
+        Connection connection = null;
         try {
-            Connection connection = Db.use().getConfig().getConnection();
+            connection = Db.use().getConfig().getConnection();
             if (connection != null) {
                 arrays.add("数据库连接成功");
             }
         } catch (Exception e) {
             arrays.add("数据库连接异常");
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
         try {
             String ping = Redis.use().ping();

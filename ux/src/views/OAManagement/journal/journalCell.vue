@@ -65,19 +65,13 @@
       <div class="text">
         <p class="row"
            v-if="data.content">
-          <span class="title">{{data.categoryId == 1 ? "今日工作内容" : data.categoryId == 2 ? "本周工作内容" : "本月工作内容"}}：</span>
-          {{data.content}}
-        </p>
+          <span class="title">{{data.categoryId == 1 ? "今日工作内容" : data.categoryId == 2 ? "本周工作内容" : "本月工作内容"}}：</span>{{data.content}}</p>
         <p class="row"
            v-if="data.tomorrow">
-          <span class="title">{{data.categoryId == 1 ? "明日工作内容" : data.categoryId == 2 ? "下周工作内容" : "下月工作内容"}}：</span>
-          {{data.tomorrow}}
-        </p>
+          <span class="title">{{data.categoryId == 1 ? "明日工作内容" : data.categoryId == 2 ? "下周工作内容" : "下月工作内容"}}：</span>{{data.tomorrow}}</p>
         <p class="row"
            v-if="data.question">
-          <span class="title">遇到的问题：</span>
-          {{data.question}}
-        </p>
+          <span class="title">遇到的问题：</span>{{data.question}}</p>
       </div>
       <div class="accessory">
         <div class="upload-img-box"
@@ -307,28 +301,41 @@ export default {
   mounted() {
     if (this.data.isRead == 0 && !this.showWorkbench) {
       this.$bus.on('journal-list-box-scroll', target => {
-        if (this.data.isRead == 0) {
-          if (target) {
-            this.parentTarget = target
-          }
-          let ispreview = this.whetherPreview()
-          if (!this.awaitMoment && ispreview) {
-            this.awaitMoment = true
-            setTimeout(() => {
-              this.awaitMoment = false
-              let ispreview = this.whetherPreview()
-              if (ispreview) {
-                this.submiteIsRead()
-              }
-            }, 3000)
-          }
-        }
+        this.observePreview(target)
       })
+      this.observePreview(
+        document.getElementById('journal-cell' + this.logIndex).parentNode
+      )
     }
 
     this.replyList = this.data.replyList
   },
   methods: {
+    /**
+     * 观察预览
+     */
+    observePreview(target) {
+      if (this.data.isRead == 0) {
+        if (target) {
+          this.parentTarget = target
+        }
+        let ispreview = this.whetherPreview()
+        if (!this.awaitMoment && ispreview) {
+          this.awaitMoment = true
+          setTimeout(() => {
+            this.awaitMoment = false
+            let ispreview = this.whetherPreview()
+            if (ispreview) {
+              this.submiteIsRead()
+            }
+          }, 3000)
+        }
+      }
+    },
+
+    /**
+     * 是否预览
+     */
     whetherPreview() {
       let dom = this.parentTarget.children[this.logIndex]
       if (this.parentTarget.getBoundingClientRect()) {
@@ -354,6 +361,7 @@ export default {
         logId: this.showWorkbench ? this.data.actionId : this.data.logId
       })
         .then(res => {
+          this.$store.dispatch('GetOAMessageNum', 'log')
           this.data.isRead = 1
         })
         .catch(err => {})
@@ -604,6 +612,8 @@ export default {
         margin-bottom: 7px;
         line-height: 22px;
         font-size: 13px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
         .title {
           width: 95px;
           text-align: left;
@@ -665,6 +675,13 @@ export default {
           color: #333;
           font-size: 13px;
           margin: 10px 0 10px 40px;
+          padding: 10px 10px 10px 40px;
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          span {
+            letter-spacing: 0.5px;
+            line-height: 18px;
+          }
           .reply {
             color: #3e84e9;
           }
@@ -751,5 +768,9 @@ export default {
       border: 0;
     }
   }
+}
+
+.wukong {
+  cursor: pointer;
 }
 </style>

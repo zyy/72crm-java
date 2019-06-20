@@ -22,7 +22,7 @@ public class _MappingKit {
 	public static void mapping(ActiveRecordPlugin arp) {
 		arp.addMapping("72crm_admin_dept", "dept_id", AdminDept.class);
 		arp.addMapping("72crm_admin_examine", "examine_id", AdminExamine.class);
-		arp.addMapping("72crm_admin_customer_setting", "setting_id", AdminCustomerSetting.class);
+		arp.addMapping("72crm_admin_config", "setting_id", AdminConfig.class);
 		arp.addMapping("72crm_admin_examine_record", "record_id", AdminExamineRecord.class);
 		arp.addMapping("72crm_admin_examine_step", "step_id", AdminExamineStep.class);
 		arp.addMapping("72crm_admin_examine_log", "log_id", AdminExamineLog.class);

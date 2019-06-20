@@ -154,7 +154,7 @@ public class CrmContactsController extends Controller {
 
     /**
      * @author wyq
-     * 导出全部线索
+     * 导出全部联系人
      */
     @Permissions("crm:contacts:excelexport")
     public void allExportExcel(BasePageRequest basePageRequest) throws IOException{
@@ -214,6 +214,7 @@ public class CrmContactsController extends Controller {
      */
     public void downloadExcel(){
         List<Record> recordList = crmContactsService.queryField();
+        recordList.removeIf(record -> "file".equals(record.getStr("formType")) || "checkbox".equals(record.getStr("formType"))|| "user".equals(record.getStr("formType"))|| "structure".equals(record.getStr("formType")));
         HSSFWorkbook wb = new HSSFWorkbook();
         HSSFSheet sheet = wb.createSheet("联系人导入表");
         HSSFRow row = sheet.createRow(0);

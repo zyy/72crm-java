@@ -12,7 +12,6 @@ import com.kakarote.crm9.erp.admin.entity.AdminRecord;
 import com.kakarote.crm9.erp.admin.entity.AdminUser;
 import com.kakarote.crm9.erp.admin.service.AdminFieldService;
 import com.kakarote.crm9.erp.admin.service.AdminSceneService;
-import com.kakarote.crm9.erp.crm.entity.AdminCustomerSetting;
 import com.kakarote.crm9.erp.crm.entity.CrmBusiness;
 import com.kakarote.crm9.erp.crm.entity.CrmContract;
 import com.kakarote.crm9.erp.crm.entity.CrmCustomer;
@@ -268,11 +267,7 @@ public class CrmCustomerController extends Controller {
         Integer dealDay = getParaToInt("dealDay");
         //启用状态
         Integer type = getParaToInt("type");
-        AdminCustomerSetting adminCustomerSetting = new AdminCustomerSetting();
-        adminCustomerSetting.setDealDay(dealDay);
-        adminCustomerSetting.setFollowupDay( followupDay);
-        adminCustomerSetting.setType(type);
-        renderJson(crmCustomerService.updateRulesSetting(adminCustomerSetting));
+        renderJson(crmCustomerService.updateRulesSetting(dealDay,followupDay,type));
     }
     /**
      * @author zxy

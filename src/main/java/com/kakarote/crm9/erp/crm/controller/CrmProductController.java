@@ -167,6 +167,7 @@ public class CrmProductController extends Controller {
      */
     public void downloadExcel(){
         List<Record> recordList = crmProductService.queryField();
+        recordList.removeIf(record -> "file".equals(record.getStr("formType")) || "checkbox".equals(record.getStr("formType"))|| "user".equals(record.getStr("formType"))|| "structure".equals(record.getStr("formType")));
         HSSFWorkbook wb = new HSSFWorkbook();
         HSSFSheet sheet = wb.createSheet("产品导入表");
         HSSFRow row = sheet.createRow(0);

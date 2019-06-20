@@ -1,14 +1,17 @@
 #namespace("crm.contact")
     #sql("getContactsPageList")
-    select name,owner_user_name from contactsview where 1=1
+    select contacts_id,name,customer_name,owner_user_name from contactsview where 1=1
       #if(contactsName)
       and name like CONCAT('%',#para(contactsName),'%')
       #end
+      #if(customerName)
+      and customer_name like CONCAT('%',#para(customerName),'%')
+      #end
       #if(telephone)
-      and telephone like CONCAT('%',#para(telephone),'%')
+      and telephone = #para(telephone)
       #end
       #if(mobile)
-      and mobile like CONCAT('%',#para(mobile),'%')
+      and mobile = #para(mobile)
       #end
     #end
 

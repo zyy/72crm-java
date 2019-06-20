@@ -61,12 +61,9 @@ export default {
   },
 
   mounted() {
-    var self = this
     /** 控制table的高度 */
-    window.onresize = function () {
-      var offsetHei = document.documentElement.clientHeight
-      var removeHeight = Object.keys(self.filterObj).length > 0 ? 310 : 240
-      self.tableHeight = offsetHei - removeHeight
+    window.onresize = () => {
+      this.updateTableHeight()
     }
     // document.getElementById('crm-table').addEventListener('click', e => {
     //   e.stopPropagation()
@@ -104,6 +101,10 @@ export default {
               return element
             })
           } else {
+            if (this.crmType === 'contract') {
+              // 合同列表展示金额信息
+              this.moneyData = res.data.money
+            }
             this.list = res.data.list
           }
 
@@ -281,6 +282,7 @@ export default {
       var offsetHei = document.documentElement.clientHeight
       var removeHeight = Object.keys(this.filterObj).length > 0 ? 310 : 240
       this.tableHeight = offsetHei - removeHeight
+      this.currentPage = 1
       this.getList()
     },
     /** 场景操作 */
@@ -398,6 +400,15 @@ export default {
       }
       return ''
     },
+
+    /**
+     * 更新表高
+     */
+    updateTableHeight() {
+      var offsetHei = document.documentElement.clientHeight
+      var removeHeight = Object.keys(this.filterObj).length > 0 ? 310 : 240
+      this.tableHeight = offsetHei - removeHeight
+    }
   },
 
   beforeDestroy() { }

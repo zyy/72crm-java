@@ -12,15 +12,6 @@ export function crmContactsSave(data) {
   })
 }
 
-// crm 列表
-export function crmContactsIndex(data) {
-  return request({
-    url: 'CrmContacts/queryList',
-    method: 'post',
-    data: data
-  })
-}
-
 // 删除
 export function crmContactsDelete(data) {
   return request({
@@ -135,3 +126,15 @@ export function crmContactsExcelImport(data) {
  *
  */
 export const crmContactsExcelDownloadURL = process.env.BASE_API + 'CrmContacts/downloadExcel'
+
+/**
+ * 查重
+ * @param {*} data
+ */
+export function crmContactsQueryListAPI(data) {
+  return request({
+    url: 'CrmContacts/queryList',
+    method: 'post',
+    data: data
+  })
+}

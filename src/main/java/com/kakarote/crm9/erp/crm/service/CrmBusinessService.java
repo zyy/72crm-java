@@ -17,6 +17,7 @@ import com.kakarote.crm9.erp.oa.common.OaEnum;
 import com.kakarote.crm9.erp.oa.entity.OaEvent;
 import com.kakarote.crm9.erp.oa.entity.OaEventRelation;
 import com.kakarote.crm9.erp.oa.service.OaActionRecordService;
+import com.kakarote.crm9.utils.AuthUtil;
 import com.kakarote.crm9.utils.BaseUtil;
 import com.kakarote.crm9.utils.FieldUtil;
 import com.kakarote.crm9.utils.R;
@@ -46,6 +47,9 @@ public class CrmBusinessService {
 
     @Inject
     private OaActionRecordService oaActionRecordService;
+
+    @Inject
+    private AuthUtil authUtil;
 
     /**
      * @author wyq
@@ -97,8 +101,11 @@ public class CrmBusinessService {
      * @author wyq
      * 根据商机id查询
      */
-    public CrmBusiness queryById(Integer businessId) {
-        return CrmBusiness.dao.findFirst(Db.getSql("crm.business.queryById"), businessId);
+    public R queryById(Integer businessId) {
+        if(!authUtil.dataAuth("business","business_id",businessId)){
+            return R.ok().put("data",new Record().set("dataAuth",0));
+        }
+        return R.ok().put("data",CrmBusiness.dao.findFirst(Db.getSql("crm.business.queryById"), businessId));
     }
 
     /**
@@ -208,12 +215,11 @@ public class CrmBusinessService {
         crmBusiness.setNewOwnerUserId(crmCustomer.getNewOwnerUserId());
         crmBusiness.setTransferType(crmCustomer.getTransferType());
         crmBusiness.setPower(crmCustomer.getPower());
-        String[] customerIdsArr = crmCustomer.getCustomerIds().split(",");
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String customerId : customerIdsArr) {
-            stringBuilder.append(",").append(CrmBusiness.dao.findFirst("select business_id from 72crm_crm_business where customer_id = ?", Integer.valueOf(customerId)).getBusinessId());
+        String businessIds = Db.queryStr("select GROUP_CONCAT(business_id) from 72crm_crm_business where customer_id in ("+crmCustomer.getCustomerIds()+")");
+        if (StrUtil.isEmpty(businessIds)){
+            return R.ok();
         }
-        crmBusiness.setBusinessIds(stringBuilder.deleteCharAt(0).toString());
+        crmBusiness.setBusinessIds(businessIds);
         return transfer(crmBusiness);
     }
 
@@ -342,12 +348,14 @@ public class CrmBusinessService {
      */
     @Before(Tx.class)
     public R boostBusinessStatus(CrmBusiness crmBusiness) {
-        CrmBusinessChange change = new CrmBusinessChange();
-        change.setBusinessId(crmBusiness.getBusinessId());
-        change.setStatusId(crmBusiness.getStatusId());
-        change.setCreateTime(DateUtil.date());
-        change.setCreateUserId(BaseUtil.getUserId().intValue());
-        change.save();
+        if (crmBusiness.getStatusId() != null) {
+            CrmBusinessChange change = new CrmBusinessChange();
+            change.setBusinessId(crmBusiness.getBusinessId());
+            change.setStatusId(crmBusiness.getStatusId());
+            change.setCreateTime(DateUtil.date());
+            change.setCreateUserId(BaseUtil.getUserId().intValue());
+            change.save();
+        }
         return crmBusiness.update() ? R.ok() : R.error();
     }
 
@@ -400,11 +408,22 @@ public class CrmBusinessService {
      * @author wyq
      * 查询商机状态组及商机状态
      */
-    public List<Record> queryBusinessStatusOptions() {
+    public List<Record> queryBusinessStatusOptions(String type) {
         List<Record> businessTypeList = Db.find("select * from 72crm_crm_business_type where status = 1");
         for (Record record : businessTypeList) {
             Integer typeId = record.getInt("type_id");
             List<Record> businessStatusList = Db.find("select * from 72crm_crm_business_status where type_id = ?", typeId);
+            if ("condition".equals(type)){
+                Record win = new Record();
+                win.set("name","赢单").set("typeId",typeId).set("statusId","win");
+                businessStatusList.add(win);
+                Record lose = new Record();
+                lose.set("name","输单").set("typeId",typeId).set("statusId","lose");
+                businessStatusList.add(lose);
+                Record invalid = new Record();
+                invalid.set("name","无效").set("typeId",typeId).set("statusId","invalid");
+                businessStatusList.add(invalid);
+            }
             record.set("statusList", businessStatusList);
         }
         return businessTypeList;

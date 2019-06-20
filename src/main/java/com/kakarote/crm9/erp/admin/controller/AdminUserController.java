@@ -140,6 +140,21 @@ public class AdminUserController extends Controller {
         renderJson(R.isSuccess(b,"修改信息失败"));
     }
 
+    /**
+     *
+     * @author zhangzhiwei
+     * @param id 用户ID
+     * @param username 用户新账号
+     * @param password 用户新密码
+     */
+    @NotNullValidate(value = "username",message = "账号不能为空")
+    @NotNullValidate(value = "password",message = "密码不能为空")
+    @NotNullValidate("id")
+    public void usernameEdit(@Para("id")Integer id,@Para("username")String username,@Para("password")String password){
+        renderJson(adminUserService.usernameEdit(id,username,password));
+
+    }
+
     public void queryUserByDeptId(@Para("deptId")Integer deptId){
         renderJson(R.ok().put("data",adminUserService.queryUserByDeptId(deptId)));;
     }

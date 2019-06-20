@@ -8,21 +8,22 @@ import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.jfinal.template.stat.ast.If;
 import com.kakarote.crm9.common.config.paragetter.BasePageRequest;
+import com.kakarote.crm9.erp.admin.entity.AdminConfig;
 import com.kakarote.crm9.erp.admin.service.AdminSceneService;
 import com.kakarote.crm9.erp.crm.common.CrmEnum;
 import com.kakarote.crm9.erp.admin.entity.AdminRecord;
 import com.kakarote.crm9.erp.admin.entity.AdminUser;
 import com.kakarote.crm9.erp.admin.service.AdminFieldService;
 import com.kakarote.crm9.erp.admin.service.AdminFileService;
+import com.kakarote.crm9.erp.crm.common.CrmParamValid;
 import com.kakarote.crm9.erp.crm.entity.*;
 import com.kakarote.crm9.erp.oa.common.OaEnum;
 import com.kakarote.crm9.erp.oa.entity.OaEvent;
 import com.kakarote.crm9.erp.oa.entity.OaEventRelation;
 import com.kakarote.crm9.erp.oa.service.OaActionRecordService;
-import com.kakarote.crm9.utils.BaseUtil;
-import com.kakarote.crm9.utils.FieldUtil;
-import com.kakarote.crm9.utils.R;
+import com.kakarote.crm9.utils.*;
 import com.jfinal.aop.Before;
 import com.jfinal.aop.Inject;
 import com.jfinal.kit.Kv;
@@ -32,7 +33,6 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.upload.UploadFile;
-import com.kakarote.crm9.utils.TagUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,17 +56,27 @@ public class CrmCustomerService {
     @Inject
     private OaActionRecordService oaActionRecordService;
 
+    @Inject
+    private CrmParamValid crmParamValid;
+
+    @Inject
+    private AuthUtil authUtil;
+
     /**
      * @author wyq
      * 分页条件查询客户
      */
     public Page<Record> getCustomerPageList(BasePageRequest<CrmCustomer> basePageRequest) {
         String customerName = basePageRequest.getData().getCustomerName();
-        String telephone = basePageRequest.getData().getTelephone();
-        if (StrUtil.isEmpty(customerName)&&StrUtil.isEmpty(telephone)){
+        if (!crmParamValid.isValid(customerName)){
             return new Page<>();
         }
-        return Db.paginate(basePageRequest.getPage(), basePageRequest.getLimit(), Db.getSqlPara("crm.customer.getCustomerPageList",Kv.by("customerName",customerName).set("telephone",telephone)));
+        String mobile = basePageRequest.getData().getMobile();
+        String telephone = basePageRequest.getData().getTelephone();
+        if (StrUtil.isEmpty(customerName)&&StrUtil.isEmpty(telephone)&&StrUtil.isEmpty(mobile)){
+            return new Page<>();
+        }
+        return Db.paginate(basePageRequest.getPage(), basePageRequest.getLimit(), Db.getSqlPara("crm.customer.getCustomerPageList",Kv.by("customerName",customerName).set("mobile",mobile).set("telephone",telephone)));
     }
 
     /**
@@ -104,6 +114,9 @@ public class CrmCustomerService {
      * 根据客户id查询
      */
     public Record queryById(Integer customerId) {
+        if(!authUtil.dataAuth("customer","customer_id",customerId)){
+            return new Record().set("dataAuth",0);
+        }
         return Db.findFirst(Db.getSql("crm.customer.queryById"), customerId);
     }
 
@@ -285,6 +298,7 @@ public class CrmCustomerService {
                 }
                 crmCustomer.setCustomerId(Integer.valueOf(customerId));
                 crmCustomer.setOwnerUserId(crmCustomer.getNewOwnerUserId());
+                crmCustomer.setFollowup(0);
                 crmCustomer.update();
                 crmRecordService.addConversionRecord(Integer.valueOf(customerId), CrmEnum.CUSTOMER_TYPE_KEY.getTypes(), crmCustomer.getNewOwnerUserId());
             }
@@ -424,7 +438,7 @@ public class CrmCustomerService {
      * 定时将客户放入公海
      */
     public void putInInternational(Record record) {
-        List<Integer> ids = Db.query(Db.getSql("crm.customer.selectOwnerUserId"), record.getInt("followup_day") * 60 * 60 * 24, record.getInt("deal_day") * 60 * 60 * 24);
+        List<Integer> ids = Db.query(Db.getSql("crm.customer.selectOwnerUserId"), Integer.valueOf(record.getStr("followupDay")) * 60 * 60 * 24, Integer.valueOf(record.getStr("dealDay")) * 60 * 60 * 24);
         if(ids != null && ids.size() > 0){
             crmRecordService.addPutIntoTheOpenSeaRecord(ids,CrmEnum.CUSTOMER_TYPE_KEY.getTypes());
             Db.update(Db.getSqlPara("crm.customer.updateOwnerUserId", Kv.by("ids",ids)));
@@ -439,6 +453,7 @@ public class CrmCustomerService {
         List<Record> fieldList = new LinkedList<>();
         String[] settingArr = new String[]{};
         fieldUtil.getFixedField(fieldList, "customerName", "客户名称", "", "text", settingArr, 1);
+        fieldUtil.getFixedField(fieldList, "mobile", "手机", "", "text", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "telephone", "电话", "", "text", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "website", "网址", "", "text", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "nextTime", "下次联系时间", "", "datetime", settingArr, 0);
@@ -456,12 +471,14 @@ public class CrmCustomerService {
         List<Record> fieldList = new LinkedList<>();
         String[] settingArr = new String[]{};
         fieldUtil.getFixedField(fieldList, "customerName", "客户名称", "", "text", settingArr, 1);
+        fieldUtil.getFixedField(fieldList, "mobile", "手机", "", "text", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "telephone", "电话", "", "text", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "website", "网址", "", "text", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "nextTime", "下次联系时间", "", "datetime", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "remark", "备注", "", "text", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "detail_address", "详细地址", "", "text", settingArr, 0);
         fieldList.addAll(adminFieldService.list("2"));
+        fieldList.removeIf(record -> "file".equals(record.getStr("formType")) || "checkbox".equals(record.getStr("formType"))|| "user".equals(record.getStr("formType"))|| "structure".equals(record.getStr("formType")));
         return fieldList;
     }
 
@@ -475,6 +492,7 @@ public class CrmCustomerService {
         Record record = Db.findFirst("select * from customerview where customer_id = ?", customerId);
         String[] settingArr = new String[]{};
         fieldUtil.getFixedField(fieldList, "customerName", "客户名称", record.getStr("customer_name"), "text", settingArr, 1);
+        fieldUtil.getFixedField(fieldList, "mobile", "手机", record.getStr("mobile"), "text", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "telephone", "电话", record.getStr("telephone"), "text", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "website", "网址", record.getStr("website"), "text", settingArr, 0);
         fieldUtil.getFixedField(fieldList, "nextTime", "下次联系时间", DateUtil.formatDateTime(record.get("next_time")), "datetime", settingArr, 0);
@@ -561,6 +579,7 @@ public class CrmCustomerService {
                 }
             }
         }
+        Db.update("update 72crm_crm_customer set followup = 1 where customer_id = ?",adminRecord.getTypesId());
         return adminRecord.save() ? R.ok() : R.error();
     }
 
@@ -656,33 +675,47 @@ public class CrmCustomerService {
      * @author zxy
      * 客户保护规则设置
      */
-    public R updateRulesSetting(AdminCustomerSetting adminCustomerSetting) {
-        Record record = Db.findFirst("select * from 72crm_admin_customer_setting");
-        if (record == null) {
-            return adminCustomerSetting.save() ? R.ok() : R.error();
-        } else {
-            adminCustomerSetting.setSettingId(record.getInt("setting_id"));
-            return adminCustomerSetting.update() ? R.ok() : R.error();
-        }
+    @Before(Tx.class)
+    public R updateRulesSetting(Integer dealDay,Integer followupDay,Integer type) {
+        Db.update("update 72crm_admin_config set value = ? where name = 'customerPoolSettingDealDays'",dealDay);
+        Db.update("update 72crm_admin_config set value = ? where name = 'customerPoolSettingFollowupDays'",followupDay);
+        Db.update("update 72crm_admin_config set status = ? where name = 'customerPoolSetting'",type);
+        return R.ok();
     }
 
     /**
      * @author zxy
      * 获取客户保护规则设置
      */
+    @Before(Tx.class)
     public R getRulesSetting() {
-        Record record = Db.findFirst("select setting_id as settingId,type,followup_day as followupDay, deal_day as dealDay from 72crm_admin_customer_setting");
-        if (record == null) {
-            AdminCustomerSetting adminCustomerSetting = new AdminCustomerSetting();
-            adminCustomerSetting.setDealDay(3);
-            adminCustomerSetting.setFollowupDay(7);
-            adminCustomerSetting.setType(0);
-            Boolean flag = adminCustomerSetting.save();
-            record = Db.findFirst("select setting_id as settingId,type,followup_day as followupDay, deal_day as dealDay from 72crm_admin_customer_setting");
-            return flag ? R.ok().put("data", record) : R.error();
-        } else {
-            return R.ok().put("data", record);
+        String dealDay = Db.queryStr("select value from 72crm_admin_config where name = 'customerPoolSettingDealDays'");
+        String followupDay = Db.queryStr("select value from 72crm_admin_config where name = 'customerPoolSettingFollowupDays'");
+        Integer type = Db.queryInt("select status from 72crm_admin_config where name = 'customerPoolSetting'");
+        if (dealDay == null || followupDay == null || type == null){
+            if (dealDay == null){
+                AdminConfig adminConfig = new AdminConfig();
+                adminConfig.setName("customerPoolSettingDealDays");
+                adminConfig.setValue("3");
+                adminConfig.save();
+                dealDay = "3";
+            }
+            if (followupDay == null){
+                AdminConfig adminConfig = new AdminConfig();
+                adminConfig.setName("customerPoolSettingFollowupDays");
+                adminConfig.setValue("7");
+                adminConfig.save();
+                followupDay = "7";
+            }
+            if (type == null){
+                AdminConfig adminConfig = new AdminConfig();
+                adminConfig.setName("customerPoolSetting");
+                adminConfig.setStatus(0);
+                adminConfig.save();
+                type = 0;
+            }
         }
+        return R.ok().put("data",Kv.by("dealDay",dealDay).set("followupDay",followupDay).set("type",type));
     }
 
     /**
@@ -734,7 +767,7 @@ public class CrmCustomerService {
             crmOwnerRecord.setCreateTime(DateUtil.date());
             crmOwnerRecord.save();
         }
-        String sql = "update 72crm_crm_customer set owner_user_id = " + userId + " where customer_id in (" + ids + ")";
+        String sql = "update 72crm_crm_customer set owner_user_id = " + userId + ",followup = 0 where customer_id in (" + ids + ")";
         return Db.update(sql) > 0 ? R.ok() : R.error();
     }
 
@@ -786,6 +819,7 @@ public class CrmCustomerService {
                     Integer number = Db.queryInt("select count(*) from 72crm_crm_customer where customer_name = ?", customerName);
                     if (0 == number) {
                         object.fluentPut("entity", new JSONObject().fluentPut("customer_name", customerName)
+                                .fluentPut("mobile",customerList.get(kv.getInt("手机")))
                                 .fluentPut("telephone", customerList.get(kv.getInt("电话")!=null?kv.getInt("电话"):kv.getInt("电话(*)")))
                                 .fluentPut("website", customerList.get(kv.getInt("网址")))
                                 .fluentPut("next_time", customerList.get(kv.getInt("下次联系时间")))
@@ -796,6 +830,7 @@ public class CrmCustomerService {
                         Record leads = Db.findFirst("select customer_id,batch_id from 72crm_crm_customer where customer_name = ?", customerName);
                         object.fluentPut("entity", new JSONObject().fluentPut("customer_id", leads.getInt("customer_id"))
                                 .fluentPut("customer_name", customerName)
+                                .fluentPut("mobile",customerList.get(kv.getInt("手机")))
                                 .fluentPut("telephone", customerList.get(kv.getInt("电话")))
                                 .fluentPut("website", customerList.get(kv.getInt("网址")))
                                 .fluentPut("next_time", customerList.get(kv.getInt("下次联系时间")))

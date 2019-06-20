@@ -12,15 +12,6 @@ export function crmCustomerSave(data) {
   })
 }
 
-// crm 客户列表
-export function crmCustomerIndex(data) {
-  return request({
-    url: 'CrmCustomer/queryList',
-    method: 'post',
-    data: data
-  })
-}
-
 // 删除
 export function crmCustomerDelete(data) {
   return request({
@@ -277,6 +268,31 @@ export function crmCustomerTeamMembers(data) {
 export function crmCustomerUpdateMembers(data) {
   return request({
     url: 'CrmCustomer/updateMembers',
+    method: 'post',
+    data: data
+  })
+}
+
+/**
+ * 查重
+ * @param {*} data
+ */
+export function crmCustomerQueryListAPI(data) {
+  return request({
+    url: 'CrmCustomer/queryList',
+    method: 'post',
+    data: data
+  })
+}
+
+/**
+ * 客户标记跟进
+ * @param {*} data
+ * id 客户IDs
+ */
+export function crmCustomerSetFollowAPI(data) {
+  return request({
+    url: 'CrmBackLog/setCustomerFollowup',
     method: 'post',
     data: data
   })

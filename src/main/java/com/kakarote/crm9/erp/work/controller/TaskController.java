@@ -4,6 +4,7 @@ import com.jfinal.aop.Inject;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.kakarote.crm9.common.config.paragetter.BasePageRequest;
+import com.kakarote.crm9.common.constant.BaseConstant;
 import com.kakarote.crm9.erp.admin.service.AdminUserService;
 import com.kakarote.crm9.erp.work.entity.Task;
 import com.kakarote.crm9.erp.work.entity.TaskRelation;
@@ -147,7 +148,12 @@ public class TaskController extends Controller {
         }else if (mold == 1 && userId == null){
             userIds = userService.queryUserIdsByParentId(BaseUtil.getUser().getUserId().intValue());
         }else {
-            userIds.add(userId);
+            List<Long> list = userService.queryChileUserIds(BaseUtil.getUser().getUserId(),BaseConstant.AUTH_DATA_RECURSION_NUM);
+            for (Long id: list) {
+                if (id.intValue() == userId){
+                    userIds.add(userId);
+                }
+            }
         }
         renderJson(taskService.getTaskList(type,status,priority,date,userIds,basePageRequest,name));
     }

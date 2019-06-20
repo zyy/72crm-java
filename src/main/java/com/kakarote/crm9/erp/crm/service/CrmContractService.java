@@ -13,6 +13,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.kakarote.crm9.common.config.paragetter.BasePageRequest;
+import com.kakarote.crm9.erp.admin.entity.AdminConfig;
 import com.kakarote.crm9.erp.admin.entity.AdminRecord;
 import com.kakarote.crm9.erp.admin.entity.AdminUser;
 import com.kakarote.crm9.erp.admin.service.AdminExamineRecordService;
@@ -24,6 +25,7 @@ import com.kakarote.crm9.erp.oa.common.OaEnum;
 import com.kakarote.crm9.erp.oa.entity.OaEvent;
 import com.kakarote.crm9.erp.oa.entity.OaEventRelation;
 import com.kakarote.crm9.erp.oa.service.OaActionRecordService;
+import com.kakarote.crm9.utils.AuthUtil;
 import com.kakarote.crm9.utils.BaseUtil;
 import com.kakarote.crm9.utils.FieldUtil;
 import com.kakarote.crm9.utils.R;
@@ -49,6 +51,9 @@ public class CrmContractService {
     @Inject
     private OaActionRecordService oaActionRecordService;
 
+    @Inject
+    private AuthUtil authUtil;
+
     /**
      * 分页条件查询合同
      */
@@ -60,6 +65,9 @@ public class CrmContractService {
      * 根据id查询合同
      */
     public R queryById(Integer id) {
+        if(!authUtil.dataAuth("contract","contract_id",id)){
+            return R.ok().put("data",new Record().set("dataAuth",0));
+        }
         Record record = Db.findFirst(Db.getSql("crm.contract.queryByContractId"), id);
         return R.ok().put("data", record);
     }
@@ -256,12 +264,11 @@ public class CrmContractService {
         crmContract.setNewOwnerUserId(crmCustomer.getNewOwnerUserId());
         crmContract.setTransferType(crmCustomer.getTransferType());
         crmContract.setPower(crmCustomer.getPower());
-        String[] customerIdsArr = crmCustomer.getCustomerIds().split(",");
-        StringBuffer stringBuffer = new StringBuffer();
-        for (String customerId : customerIdsArr) {
-            stringBuffer.append(",").append(CrmContract.dao.findFirst("select contract_id from 72crm_crm_contract where customer_id = ?", Integer.valueOf(customerId)).getContractId());
+        String contractIds = Db.queryStr("select GROUP_CONCAT(contract_id) from 72crm_crm_contract where customer_id in ("+crmCustomer.getCustomerIds()+")");
+        if (StrUtil.isEmpty(contractIds)){
+            return R.ok();
         }
-        crmContract.setContractIds(stringBuffer.deleteCharAt(0).toString());
+        crmContract.setContractIds(contractIds);
         return transfer(crmContract);
     }
 
@@ -514,5 +521,38 @@ public class CrmContractService {
         }
     }
 
+    /**
+     * 查询合同到期提醒设置
+     */
+    public R queryContractConfig(){
+        Record config = Db.findFirst("select status,value as contractDay from 72crm_admin_config where name = 'expiringContractDays'");
+        if (config == null){
+            AdminConfig adminConfig = new AdminConfig();
+            adminConfig.setStatus(0);
+            adminConfig.setName("expiringContractDays");
+            adminConfig.setValue("3");
+            adminConfig.setDescription("合同到期提醒");
+            adminConfig.save();
+            config.set("status",0).set("value","3");
+        }
+        return R.ok().put("data",config);
+    }
+
+    /**
+     * 修改合同到期提醒设置
+     */
+    @Before(Tx.class)
+    public R setContractConfig(Integer status,Integer contractDay){
+        Integer number = Db.update("update 72crm_admin_config set status = ?,value = ? where name = 'expiringContractDays'",status,contractDay);
+        if (0 == number){
+            AdminConfig adminConfig = new AdminConfig();
+            adminConfig.setStatus(0);
+            adminConfig.setName("expiringContractDays");
+            adminConfig.setValue("3");
+            adminConfig.setDescription("合同到期提醒");
+            adminConfig.save();
+        }
+        return R.ok();
+    }
 }
 

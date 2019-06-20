@@ -15,9 +15,11 @@ import com.kakarote.crm9.erp.admin.entity.AdminRecord;
 import com.kakarote.crm9.erp.admin.service.AdminFieldService;
 import com.kakarote.crm9.erp.admin.service.AdminFileService;
 import com.kakarote.crm9.erp.crm.common.CrmEnum;
+import com.kakarote.crm9.erp.crm.common.CrmParamValid;
 import com.kakarote.crm9.erp.crm.entity.CrmCustomer;
 import com.kakarote.crm9.erp.crm.entity.CrmLeads;
 import com.kakarote.crm9.erp.oa.entity.OaEvent;
+import com.kakarote.crm9.utils.AuthUtil;
 import com.kakarote.crm9.utils.BaseUtil;
 import com.kakarote.crm9.utils.FieldUtil;
 import com.kakarote.crm9.utils.R;
@@ -48,12 +50,21 @@ public class CrmLeadsService {
     @Inject
     private AdminFileService adminFileService;
 
+    @Inject
+    private CrmParamValid crmParamValid;
+
+    @Inject
+    private AuthUtil authUtil;
+
     /**
      * @author wyq
      * 分页条件查询线索
      */
     public Page<Record> getLeadsPageList(BasePageRequest<CrmLeads> basePageRequest) {
         String leadsName = basePageRequest.getData().getLeadsName();
+        if (!crmParamValid.isValid(leadsName)){
+            return new Page<>();
+        }
         String telephone = basePageRequest.getData().getTelephone();
         String mobile = basePageRequest.getData().getMobile();
         if (StrUtil.isEmpty(leadsName) && StrUtil.isEmpty(telephone) && StrUtil.isEmpty(mobile)){
@@ -117,6 +128,9 @@ public class CrmLeadsService {
      * 根据线索id查询
      */
     public Record queryById(Integer leadsId) {
+        if(!authUtil.dataAuth("leads","leads_id",leadsId)){
+            return new Record().set("dataAuth",0);
+        }
         return Db.findFirst(Db.getSql("crm.leads.queryById"), leadsId);
     }
 
@@ -175,6 +189,7 @@ public class CrmLeadsService {
             crmCustomer.setCustomerName(crmLeads.getStr("leads_name"));
             crmCustomer.setIsLock(0);
             crmCustomer.setNextTime(crmLeads.getDate("next_time"));
+            crmCustomer.setMobile(crmLeads.getStr("mobile"));
             crmCustomer.setTelephone(crmLeads.getStr("telephone"));
             crmCustomer.setDealStatus("未成交");
             crmCustomer.setCreateUserId(BaseUtil.getUser().getUserId().intValue());
@@ -304,6 +319,7 @@ public class CrmLeadsService {
             oaEvent.setCreateTime(DateUtil.date());
             oaEvent.save();
         }
+        Db.update("update 72crm_crm_leads set followup = 1 where leads_id = ?",adminRecord.getTypesId());
         return adminRecord.save() ? R.ok() : R.error();
     }
 

@@ -4,23 +4,19 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.util.TypeUtils;
-import com.kakarote.crm9.common.config.cache.CaffeineCache;
-import com.kakarote.crm9.common.config.cache.RedisCache;
-import com.kakarote.crm9.erp.admin.entity.AdminField;
-import com.kakarote.crm9.erp.admin.entity.AdminFieldSort;
-import com.kakarote.crm9.erp.admin.entity.AdminFieldStyle;
-import com.kakarote.crm9.erp.admin.entity.AdminUser;
-import com.kakarote.crm9.utils.BaseUtil;
-import com.kakarote.crm9.utils.FieldUtil;
-import com.kakarote.crm9.utils.R;
 import com.jfinal.aop.Before;
 import com.jfinal.kit.Kv;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.plugin.activerecord.tx.Tx;
-import com.jfinal.plugin.redis.Cache;
-import com.jfinal.plugin.redis.Redis;
+import com.kakarote.crm9.common.config.cache.CaffeineCache;
+import com.kakarote.crm9.erp.admin.entity.AdminField;
+import com.kakarote.crm9.erp.admin.entity.AdminFieldSort;
+import com.kakarote.crm9.erp.admin.entity.AdminFieldStyle;
+import com.kakarote.crm9.utils.BaseUtil;
+import com.kakarote.crm9.utils.FieldUtil;
+import com.kakarote.crm9.utils.R;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,9 +34,9 @@ public class AdminFieldService {
     @Before(Tx.class)
     public R save(JSONObject jsonObject) {
         JSONArray adminFields = jsonObject.getJSONArray("data");
-        Map<String,List<AdminField>> collect = adminFields.stream().map(adminField -> TypeUtils.castToJavaBean(adminField, AdminField.class)).collect(Collectors.groupingBy(AdminField::getName));
-        for (Map.Entry<String,List<AdminField>> entry : collect.entrySet()) {
-            if(entry.getValue().size() > 1){
+        Map<String, List<AdminField>> collect = adminFields.stream().map(adminField -> TypeUtils.castToJavaBean(adminField, AdminField.class)).collect(Collectors.groupingBy(AdminField::getName));
+        for (Map.Entry<String, List<AdminField>> entry : collect.entrySet()) {
+            if (entry.getValue().size() > 1) {
                 return R.error("自定义表单名称不能重复！");
             }
         }
@@ -145,42 +141,61 @@ public class AdminFieldService {
     private synchronized void createView(Integer label) {
         List<Record> fieldNameList = Db.find("select  name,type from 72crm_admin_field WHERE batch_id is null and label=? ORDER BY sorting asc", label);
         StringBuilder sql = new StringBuilder();
+        StringBuilder userJoin = new StringBuilder();
+        StringBuilder deptJoin = new StringBuilder();
         fieldNameList.forEach(record -> {
             String name = record.getStr("name");
             Integer type = record.getInt("type");
             if (type == 10) {
-                sql.append(",(select GROUP_CONCAT(realname) from 72crm_admin_user where FIND_IN_SET(user_id,IFNULL((SELECT value FROM 72crm_admin_field WHERE name='").append(name).append("' and batch_id=a.batch_id limit 1),0))) as '").append(name).append("'");
+                sql.append(String.format("GROUP_CONCAT(if(a.name = '%s',b.realname,null)) AS `%s`,", name, name));
+                if (userJoin.length() == 0) {
+                    userJoin.append(" left join 72crm_admin_user b on find_in_set(dept_id,ifnull(value,0))");
+                }
             } else if (type == 12) {
-                sql.append(",(select GROUP_CONCAT(name) from 72crm_admin_dept where FIND_IN_SET(dept_id,IFNULL((SELECT value FROM 72crm_admin_field WHERE name='").append(name).append("' and batch_id=a.batch_id limit 1),0))) as '").append(name).append("'");
+                sql.append(String.format("GROUP_CONCAT(if(a.name = '%s',c.name,null)) AS `%s`,", name, name));
+                if (deptJoin.length() == 0) {
+                    deptJoin.append(" left join 72crm_admin_dept c on find_in_set(dept_id,ifnull(value,0))");
+                }
             } else {
-                sql.append(",(SELECT value FROM 72crm_admin_field WHERE name='").append(name).append("' and batch_id=a.batch_id limit 1) as '").append(name).append("'");
+                sql.append(String.format("max(if(a.name = '%s',value, null)) AS `%s`,", name, name));
             }
         });
         String create = "";
+        String filedCreate = "";
         switch (label) {
             case 1:
-                create = Db.getSql("admin.field.leadsview").replace("?", sql);
+                filedCreate = String.format(Db.getSql("admin.field.fieldleadsview"), sql, userJoin.append(deptJoin), label);
+                create = Db.getSql("admin.field.leadsview");
                 break;
             case 2:
-                create = Db.getSql("admin.field.customerview").replace("?", sql);
+                filedCreate = String.format(Db.getSql("admin.field.fieldcustomerview"), sql, userJoin.append(deptJoin), label);
+                create = Db.getSql("admin.field.customerview");
                 break;
             case 3:
-                create = Db.getSql("admin.field.contactsview").replace("?", sql);
+                filedCreate = String.format(Db.getSql("admin.field.fieldcontactsview"), sql, userJoin.append(deptJoin), label);
+                create = Db.getSql("admin.field.contactsview");
                 break;
             case 4:
-                create = Db.getSql("admin.field.productview").replace("?", sql);
+                filedCreate = String.format(Db.getSql("admin.field.fieldproductview"), sql, userJoin.append(deptJoin), label);
+                create = Db.getSql("admin.field.productview");
                 break;
             case 5:
-                create = Db.getSql("admin.field.businessview").replace("?", sql);
+                filedCreate = String.format(Db.getSql("admin.field.fieldbusinessview"), sql, userJoin.append(deptJoin), label);
+                create = Db.getSql("admin.field.businessview");
                 break;
             case 6:
-                create = Db.getSql("admin.field.contractview").replace("?", sql);
+                filedCreate = String.format(Db.getSql("admin.field.fieldcontractview"), sql, userJoin.append(deptJoin), label);
+                create = Db.getSql("admin.field.contractview");
                 break;
             case 7:
-                create = Db.getSql("admin.field.receivablesview").replace("?", sql);
+                filedCreate = String.format(Db.getSql("admin.field.fieldreceivablesview"), sql, userJoin.append(deptJoin), label);
+                create = Db.getSql("admin.field.receivablesview");
                 break;
             default:
                 break;
+        }
+        if (StrUtil.isNotBlank(filedCreate)) {
+            Db.update(filedCreate);
         }
         if (StrUtil.isNotBlank(create)) {
             Db.update(create);
@@ -193,26 +208,27 @@ public class AdminFieldService {
         }
         return AdminField.dao.find(AdminField.dao.getSqlPara("admin.field.queryFieldsByBatchId", Kv.by("batchId", batchId).set("names", name)));
     }
-    public List<Record> queryByBatchId(String batchId,Integer label) {
+
+    public List<Record> queryByBatchId(String batchId, Integer label) {
         if (StrUtil.isEmpty(batchId)) {
             return new ArrayList<>();
         }
-        List<Record> recordList = Db.find(AdminField.dao.getSqlPara("admin.field.queryFieldsByBatchId", Kv.by("batchId", batchId).set("label",label)));
+        List<Record> recordList = Db.find(AdminField.dao.getSqlPara("admin.field.queryFieldsByBatchId", Kv.by("batchId", batchId).set("label", label)));
         recordList.forEach(record -> {
-            if (record.getInt("type") == 10){
-                if(StrUtil.isNotEmpty(record.getStr("value"))){
-                    List<Record> userList = Db.find("select user_id,realname from 72crm_admin_user where user_id in ("+record.getStr("value")+")");
-                    record.set("value",userList);
-                }else {
-                    record.set("value",new ArrayList<>());
+            if (record.getInt("type") == 10) {
+                if (StrUtil.isNotEmpty(record.getStr("value"))) {
+                    List<Record> userList = Db.find("select user_id,realname from 72crm_admin_user where user_id in (" + record.getStr("value") + ")");
+                    record.set("value", userList);
+                } else {
+                    record.set("value", new ArrayList<>());
                 }
                 record.set("default_value", new ArrayList<>(0));
-            } else if (record.getInt("type") == 12){
-                if(StrUtil.isNotEmpty(record.getStr("value"))){
-                    List<Record> deptList = Db.find("select dept_id,name from 72crm_admin_dept where dept_id in ("+record.getStr("value")+")");
-                    record.set("value",deptList);
-                }else {
-                    record.set("value",new ArrayList<>());
+            } else if (record.getInt("type") == 12) {
+                if (StrUtil.isNotEmpty(record.getStr("value"))) {
+                    List<Record> deptList = Db.find("select dept_id,name from 72crm_admin_dept where dept_id in (" + record.getStr("value") + ")");
+                    record.set("value", deptList);
+                } else {
+                    record.set("value", new ArrayList<>());
                 }
                 record.set("default_value", new ArrayList<>(0));
             }
@@ -220,8 +236,9 @@ public class AdminFieldService {
         recordToFormType(recordList);
         return recordList;
     }
+
     public List<Record> queryByBatchId(String batchId) {
-        return queryByBatchId(batchId,null);
+        return queryByBatchId(batchId, null);
     }
 
     public R queryFields() {
@@ -443,7 +460,7 @@ public class AdminFieldService {
             }
             if (null != fieldList) {
                 for (Record record : fieldList) {
-                    fieldUtil.add(record.getStr("name"), record.getStr("name"),record.getInt("field_id"));
+                    fieldUtil.add(record.getStr("name"), record.getStr("name"), record.getInt("field_id"));
                 }
             }
             sortList = fieldUtil.getAdminFieldSortList();

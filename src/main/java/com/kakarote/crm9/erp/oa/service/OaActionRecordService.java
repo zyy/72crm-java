@@ -74,12 +74,10 @@ public class OaActionRecordService {
         SqlPara sqlPara;
         List<Long> userIdList = userService.queryChileUserIds(user.getUserId(), BaseConstant.AUTH_DATA_RECURSION_NUM);
         userIdList.add(user.getUserId());
-        List<Integer> deptIdList=userService.queryChileDeptIds(user.getDeptId(),BaseConstant.AUTH_DATA_RECURSION_NUM);
-        deptIdList.add(user.getDeptId());
         if (type.equals(OaEnum.ALL_TYPE_KEY.getTypes())) {
-            sqlPara = Db.getSqlPara("oa.record.queryList", Kv.by("userId", user.getUserId()).set("deptId", user.getDeptId()).set("userIds", userIdList).set("deptIds", deptIdList));
+            sqlPara = Db.getSqlPara("oa.record.queryList", Kv.by("userId", user.getUserId()).set("deptId", user.getDeptId()).set("userIds", userIdList));
         } else {
-            sqlPara = Db.getSqlPara("oa.record.queryList", Kv.by("userId", user.getUserId()).set("deptId", user.getDeptId()).set("type", type).set("userIds", userIdList).set("deptIds", deptIdList));
+            sqlPara = Db.getSqlPara("oa.record.queryList", Kv.by("userId", user.getUserId()).set("deptId", user.getDeptId()).set("type", type).set("userIds", userIdList));
         }
         Page<Record> pageData = Db.paginate(pageRequest.getPage(), pageRequest.getLimit(), sqlPara);
         pageData.getList().forEach(record -> {

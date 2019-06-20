@@ -296,6 +296,7 @@ public class TaskService {
         }
         }else {
             page.setList(new ArrayList<>());
+            return R.ok().put("data", page);
         }
         if (status != null ){
             sql.append(" and a.status = ").append(status);

@@ -13,6 +13,7 @@ import com.kakarote.crm9.erp.admin.service.AdminFieldService;
 import com.kakarote.crm9.erp.admin.service.AdminSceneService;
 import com.kakarote.crm9.erp.crm.common.CrmEnum;
 import com.kakarote.crm9.erp.crm.entity.CrmProduct;
+import com.kakarote.crm9.utils.AuthUtil;
 import com.kakarote.crm9.utils.BaseUtil;
 import com.kakarote.crm9.utils.FieldUtil;
 import com.kakarote.crm9.utils.R;
@@ -44,6 +45,9 @@ public class CrmProductService {
 
     @Inject
     private AdminSceneService adminSceneService;
+
+    @Inject
+    private AuthUtil authUtil;
 
     /**
      * 分页条件查询产品
@@ -89,8 +93,10 @@ public class CrmProductService {
      * 根据id查询产品
      */
     public R queryById(Integer id) {
+        if(!authUtil.dataAuth("product","product_id",id)){
+            return R.ok().put("data",new Record().set("dataAuth",0));
+        }
         Record record = Db.findFirst("select * from productview where product_id = ?", id);
-
         return R.ok().put("data", record);
     }
 

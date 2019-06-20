@@ -3,10 +3,10 @@
     select a.*,b.examine_status,b.record_id as examine_record_id,b.examine_step_id ,c.category_id,c.title as categoryTitle
     from 72crm_oa_examine a left join 72crm_oa_examine_record b on a.examine_id = b.examine_id left join 72crm_oa_examine_category c on a.category_id = c.category_id
     where a.create_user_id = #para(userId)
-    #if(categoryId)
+    #if(notEmpty(categoryId))
     and a.category_id = #para(categoryId)
     #end
-    #if(status)
+    #if(notEmpty(status))
     and  b.examine_status = #para(status)
     #end
     #if(startTime!=null && endTime!=null)
@@ -17,7 +17,7 @@
   #sql("myOaExamine")
     select a.*,b.examine_status,b.record_id,b.examine_step_id,c.category_id,c.title as categoryTitle  from 72crm_oa_examine a  left join  72crm_oa_examine_record b on a.examine_id = b.examine_id left join 72crm_oa_examine_category c on a.category_id = c.category_id left join 72crm_oa_examine_log d on d.record_id = b.record_id
     where 1 = 1
-      #if(categoryId)
+      #if(notEmpty(categoryId))
       and a.category_id = #para(categoryId)
       #end
       #if(status==1)

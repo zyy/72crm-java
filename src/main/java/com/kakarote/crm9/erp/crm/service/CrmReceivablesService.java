@@ -10,6 +10,7 @@ import com.kakarote.crm9.erp.admin.service.AdminFieldService;
 import com.kakarote.crm9.erp.crm.common.CrmEnum;
 import com.kakarote.crm9.erp.crm.entity.CrmReceivables;
 import com.kakarote.crm9.erp.crm.entity.CrmReceivablesPlan;
+import com.kakarote.crm9.utils.AuthUtil;
 import com.kakarote.crm9.utils.BaseUtil;
 import com.kakarote.crm9.utils.FieldUtil;
 import com.kakarote.crm9.utils.R;
@@ -39,6 +40,9 @@ public class CrmReceivablesService {
 
     @Inject
     private AdminExamineRecordService examineRecordService;
+
+    @Inject
+    private AuthUtil authUtil;
 
     /**
      * 获取用户审核通过和未通过的回款
@@ -133,8 +137,10 @@ public class CrmReceivablesService {
      * 根据id查询回款
      */
     public R queryById(Integer id) {
+        if(!authUtil.dataAuth("receivables","receivables_id",id)){
+            return R.ok().put("data",new Record().set("dataAuth",0));
+        }
         Record record = Db.findFirst(Db.getSqlPara("crm.receivables.queryReceivablesById", Kv.by("id", id)));
-
         return R.ok().put("data", record);
     }
 

@@ -1,11 +1,14 @@
 #namespace("crm.customer")
     #sql("getCustomerPageList")
-    select customer_name,owner_user_name from customerview where 1=1
+      select customer_id,customer_name,owner_user_name from customerview where 1=1
       #if(customerName)
       and customer_name like CONCAT('%',#para(customerName),'%')
       #end
+      #if(mobile)
+      and mobile = #para(mobile)
+      #end
       #if(telephone)
-      and telephone like CONCAT('%',#para(telephone),'%')
+      and telephone = #para(telephone)
       #end
     #end
 
@@ -107,8 +110,8 @@
     WHERE customer_id in (
         #for(i:ids)
              #(for.index > 0 ? "," : "")#para(i)
-             #end
-        )
+        #end
+    )
 
     #end
     #sql ("selectOwnerUserId")

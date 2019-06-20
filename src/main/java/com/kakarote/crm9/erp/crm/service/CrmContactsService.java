@@ -14,6 +14,7 @@ import com.kakarote.crm9.erp.crm.common.CrmEnum;
 import com.kakarote.crm9.erp.admin.entity.AdminRecord;
 import com.kakarote.crm9.erp.admin.service.AdminFieldService;
 import com.kakarote.crm9.erp.admin.service.AdminFileService;
+import com.kakarote.crm9.erp.crm.common.CrmParamValid;
 import com.kakarote.crm9.erp.crm.entity.CrmBusiness;
 import com.kakarote.crm9.erp.crm.entity.CrmContacts;
 import com.kakarote.crm9.erp.crm.entity.CrmContactsBusiness;
@@ -22,6 +23,7 @@ import com.kakarote.crm9.erp.oa.entity.OaEvent;
 import com.kakarote.crm9.erp.oa.entity.OaEventRelation;
 import com.kakarote.crm9.common.config.paragetter.BasePageRequest;
 import com.kakarote.crm9.erp.oa.service.OaActionRecordService;
+import com.kakarote.crm9.utils.AuthUtil;
 import com.kakarote.crm9.utils.BaseUtil;
 import com.kakarote.crm9.utils.FieldUtil;
 import com.kakarote.crm9.utils.R;
@@ -55,6 +57,12 @@ public class CrmContactsService {
     @Inject
     private OaActionRecordService oaActionRecordService;
 
+    @Inject
+    private CrmParamValid crmParamValid;
+
+    @Inject
+    private AuthUtil authUtil;
+
     /**
      * @author wyq
      * 分页条件查询联系人
@@ -63,10 +71,15 @@ public class CrmContactsService {
         String contactsName = basePageRequest.getData().getName();
         String telephone = basePageRequest.getData().getTelephone();
         String mobile = basePageRequest.getData().getMobile();
-        if (StrUtil.isEmpty(contactsName) && StrUtil.isEmpty(telephone) && StrUtil.isEmpty(mobile)){
+        String customerName = basePageRequest.getData().getCustomerName();
+        if (!crmParamValid.isValid(customerName)){
             return new Page<>();
         }
-        return Db.paginate(basePageRequest.getPage(),basePageRequest.getLimit(),Db.getSqlPara("crm.contact.getContactsPageList",Kv.by("contactsName",contactsName).set("telephone",telephone).set("mobile",mobile)));
+        if (StrUtil.isEmpty(contactsName) && StrUtil.isEmpty(telephone) && StrUtil.isEmpty(mobile) && StrUtil.isEmpty(customerName)){
+            return new Page<>();
+        }
+        return Db.paginate(basePageRequest.getPage(),basePageRequest.getLimit(), Db.getSqlPara("crm.contact.getContactsPageList",
+                Kv.by("contactsName",contactsName).set("customerName",customerName).set("telephone",telephone).set("mobile",mobile)));
     }
 
     /**
@@ -74,6 +87,9 @@ public class CrmContactsService {
      * 根据id查询联系人
      */
     public Record queryById(Integer contactsId){
+        if(!authUtil.dataAuth("contacts","contacts_id",contactsId)){
+            return new Record().set("dataAuth",0);
+        }
         return Db.findFirst(Db.getSql("crm.contact.queryById"),contactsId);
     }
 
@@ -199,13 +215,11 @@ public class CrmContactsService {
      * 根据客户id变更负责人
      * @param customerId 客户ID
      * @param ownerUserId 负责人ID
-     * @author zzw
      */
     public boolean updateOwnerUserId(Integer customerId,Integer ownerUserId){
-        String sql = "update 72crm_crm_contacts set owner_user_id = " + ownerUserId + " where customer_id = "+customerId;
-        int update = Db.update(sql);
+        Db.update("update 72crm_crm_contacts set owner_user_id = " + ownerUserId + " where customer_id = "+customerId);
         crmRecordService.addConversionRecord(customerId,CrmEnum.CUSTOMER_TYPE_KEY.getTypes(),ownerUserId);
-        return  update> 0;
+        return true;
     }
 
     /**
@@ -383,7 +397,7 @@ public class CrmContactsService {
                                 .fluentPut("next_time", contactsList.get(kv.getInt("下次联系时间")))
                                 .fluentPut("remark", contactsList.get(kv.getInt("备注")))
                                 .fluentPut("owner_user_id", ownerUserId));
-                    } else if (number == 1 ) {
+                    } else if (number == 1 && repeatHandling == 1) {
                         if (repeatHandling == 1){
                             Record contacts = Db.findFirst(Db.getSqlPara("crm.contact.queryRepeatField",Kv.by("contactsName",contactsName).set("telephone",telephone).set("mobile",mobile)));
                             object.fluentPut("entity", new JSONObject().fluentPut("contacts_id", contacts.getInt("contacts_id"))
@@ -398,9 +412,9 @@ public class CrmContactsService {
                                     .fluentPut("remark", contactsList.get(kv.getInt("备注")))
                                     .fluentPut("owner_user_id", ownerUserId)
                                     .fluentPut("batch_id", contacts.getStr("batch_id")));
-                        }else if (repeatHandling == 2){
-                            continue;
                         }
+                    } else if (repeatHandling == 2){
+                        continue;
                     } else if (number > 1){
                         return R.error("数据多条重复");
                     }
