@@ -31,6 +31,9 @@ INSERT INTO `72crm_admin_config` VALUES ('6', '0', 'customerPoolSettingFollowupD
 ALTER TABLE `72crm_crm_leads`
 ADD COLUMN `followup`  int(11) NULL DEFAULT 0 COMMENT '跟进状态 0未跟进1已跟进' AFTER `leads_id`;
 
+ALTER TABLE `72crm_oa_announcement`
+ADD COLUMN `read_user_ids`  varchar(255) NULL COMMENT '已读用户' AFTER `owner_user_ids`;
+
 SET FOREIGN_KEY_CHECKS=0;
 
 -- ----------------------------

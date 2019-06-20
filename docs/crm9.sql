@@ -1118,6 +1118,7 @@ CREATE TABLE `72crm_oa_announcement` (
   `end_time` datetime DEFAULT NULL COMMENT '结束时间',
   `dept_ids` varchar(100) DEFAULT NULL COMMENT '通知部门',
   `owner_user_ids` varchar(100) DEFAULT NULL COMMENT '通知人',
+  `read_user_ids` varchar(255) DEFAULT NULL COMMENT '已读用户',
   PRIMARY KEY (`announcement_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8 COMMENT='公告表';
 
