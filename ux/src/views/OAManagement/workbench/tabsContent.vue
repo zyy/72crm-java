@@ -239,9 +239,15 @@ export default {
         word-wrap: break-word;
         letter-spacing: 0.5px;
         line-height: 18px;
+        background-color: #f4f7fd;
+        padding: 10px;
+        border-radius: 2px;
         span {
           cursor: pointer;
         }
+      }
+      .title :hover {
+        text-decoration: underline;
       }
     }
   }

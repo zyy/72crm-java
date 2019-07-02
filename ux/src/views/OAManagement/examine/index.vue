@@ -42,6 +42,7 @@
                              @close="showCategorySelect=false"></examine-category-select>
     <examine-create-view v-if="isCreate"
                          :categoryId="createInfo.categoryId"
+                         :type="createInfo.type"
                          :categoryTitle="createInfo.title"
                          :action="createAction"
                          @save-success="createSaveSuccess"

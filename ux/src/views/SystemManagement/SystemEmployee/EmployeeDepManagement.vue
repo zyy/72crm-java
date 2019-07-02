@@ -418,7 +418,7 @@ export default {
       resetPasswordVisible: false,
       rules: {
         password: [
-          { required: true, message: '请输入旧密码', trigger: 'blur' },
+          { required: true, message: '请输入密码', trigger: 'blur' },
           { min: 6, max: 12, message: '长度在 6 到 12 个字符', trigger: 'blur' }
         ],
         username: [
@@ -600,7 +600,7 @@ export default {
                   })
               : []
           } else if (element.field === 'parentId') {
-            detail.parentId = this.dialogData.parentId
+            detail.parentId = this.dialogData.parentId || ''
           } else if (element.field === 'deptId') {
             detail.deptId = this.dialogData.deptId
           } else {
@@ -728,6 +728,7 @@ export default {
                 this.$message.success('新增成功')
                 this.employeeCreateDialog = false
                 this.usersListFun()
+                this.getSelectUserList()
                 this.loading = false
               })
               .catch(() => {
@@ -744,6 +745,7 @@ export default {
                 this.employeeCreateDialog = false
                 this.$message.success('编辑成功')
                 this.usersListFun()
+                this.getSelectUserList()
                 this.loading = false
               })
               .catch(() => {
@@ -852,27 +854,33 @@ export default {
     },
     // 重置密码 -- 确定按钮
     passSubmit(val) {
-      var ids = []
-      if (this.selectionList.length > 0) {
-        ids = this.selectionList
-          .map(function(item, index, array) {
-            return item.userId
-          })
-          .join(',')
-      } else {
-        ids = this.dialogData.userId
-      }
-      val.userIds = ids
-      this.loading = true
-      adminUsersUpdatePwd(val)
-        .then(res => {
-          this.$message.success('重置成功')
-          this.resetPasswordClose()
-          this.loading = false
-        })
-        .catch(() => {
-          this.loading = false
-        })
+      this.$refs.passForm.validate(valid => {
+        if (valid) {
+          var ids = []
+          if (this.selectionList.length > 0) {
+            ids = this.selectionList
+              .map(function(item, index, array) {
+                return item.userId
+              })
+              .join(',')
+          } else {
+            ids = this.dialogData.userId
+          }
+          val.userIds = ids
+          this.loading = true
+          adminUsersUpdatePwd(val)
+            .then(res => {
+              this.$message.success('重置成功')
+              this.resetPasswordClose()
+              this.loading = false
+            })
+            .catch(() => {
+              this.loading = false
+            })
+        } else {
+          return false
+        }
+      })
     },
     /**
      * 重置登录账号
@@ -882,7 +890,6 @@ export default {
         if (valid) {
           if (this.selectionList.length > 0) {
             val.id = this.selectionList[0].id
-            console.log(val)
             this.loading = true
             adminUsersUsernameEditAPI(val)
               .then(res => {
@@ -939,6 +946,7 @@ export default {
       this.loading = true
       usersList({ pageType: 0 })
         .then(res => {
+          this.optionsList['parentId'].list = []
           for (let i of res.data) {
             this.optionsList['parentId'].list.push({
               id: i.userId,

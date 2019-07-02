@@ -35,7 +35,7 @@ public class CrmBackLogService {
         Integer todayCustomer = Db.queryInt(Db.getSql("crm.backLog.todayCustomerNum"),userId);
         Integer followLeads = Db.queryInt(Db.getSql("crm.backLog.followLeadsNum"),userId);
         Integer followCustomer = Db.queryInt(Db.getSql("crm.backLog.followCustomerNum"),userId);
-        Integer checkContract = Db.queryInt(Db.getSql("crm.backLog.checkContractNum"),userId);
+        Integer config = Db.queryInt("select status from 72crm_admin_config where name = 'expiringContractDays'");
         Integer checkReceivables = Db.queryInt(Db.getSql("crm.backLog.checkReceivablesNum"),userId);
         Integer remindReceivablesPlan = Db.queryInt(Db.getSql("crm.backLog.remindReceivablesPlanNum"),userId);
         AdminConfig adminConfig = AdminConfig.dao.findFirst("select * from 72crm_admin_config where name = 'expiringContractDays'");
@@ -43,9 +43,13 @@ public class CrmBackLogService {
         if (1 == adminConfig.getStatus()){
             endContract = Db.queryInt(Db.getSql("crm.backLog.endContractNum"),adminConfig.getValue(),userId);
         }
-        return R.ok().put("data",Kv.by("todayCustomer",todayCustomer).set("followLeads",followLeads).set("followCustomer",followCustomer)
-                .set("checkContract",checkContract).set("checkReceivables",checkReceivables).set("remindReceivablesPlan",remindReceivablesPlan)
-                .set("endContract",endContract));
+        Kv kv = Kv.by("todayCustomer",todayCustomer).set("followLeads",followLeads).set("followCustomer",followCustomer)
+                .set("checkReceivables",checkReceivables).set("remindReceivablesPlan",remindReceivablesPlan).set("endContract",endContract);
+        if (config == 1){
+            Integer checkContract = Db.queryInt(Db.getSql("crm.backLog.checkContractNum"),userId);
+            kv.set("checkContract",checkContract);
+        }
+        return R.ok().put("data",kv);
     }
 
     /**

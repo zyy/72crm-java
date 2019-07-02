@@ -75,9 +75,9 @@ const customerRouter = {
       requiresAuth: true,
       title: '公海',
       icon: 'seas',
-      index: 2,
+      index: 1,
       type: 'crm',
-      subType: ['customer', 'pool']
+      subType: 'pool'
     }
   },
   {

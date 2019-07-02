@@ -548,6 +548,7 @@ import membersDep from '@/components/selectEmployee/membersDep'
 import tagIndex from './tag/tagIndex'
 import subTask from './subTask'
 // emoji
+import xss from 'xss'
 import emoji from '@/components/emoji'
 // 关联业务 - 选中列表
 import relatedBusiness from '@/components/relatedBusiness'
@@ -1001,7 +1002,7 @@ export default {
         setCommentAPI({
           typeId: this.id,
           type: 1,
-          content: this.commentsTextarea
+          content: xss(this.commentsTextarea)
         })
           .then(res => {
             res.data.childCommentList = []
@@ -1034,7 +1035,7 @@ export default {
           typeId: item.typeId,
           mainId: item.mainId == 0 ? item.commentId : item.mainId,
           type: 1,
-          content: this.childCommentsTextarea
+          content: xss(this.childCommentsTextarea)
         })
           .then(res => {
             this.childCommentsPopover = false

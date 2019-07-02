@@ -1,3 +1,4 @@
+#mysql
 mysql.jdbcUrl = jdbc:mysql://127.0.0.1:3306/crm9?characterEncoding=utf8&useSSL=false&zeroDateTimeBehavior=convertToNull&tinyInt1isBit=false
 mysql.user = root
 mysql.password = 123456
@@ -12,4 +13,3 @@ MainRedis.timeout=20000
 MainRedis.password=123456
 MainRedis.cacheName = 72crm
 MainRedis.database = 0
-#---------------------------------------------------------

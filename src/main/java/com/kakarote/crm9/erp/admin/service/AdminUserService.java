@@ -272,6 +272,7 @@ public class AdminUserService {
             if (list.contains(4)) {
                 List<Record> records = adminDeptService.queryDeptByParentDept(adminUser.getDeptId(), BaseConstant.AUTH_DATA_RECURSION_NUM);
                 List<Integer> deptIds = new ArrayList<>();
+                deptIds.add(adminUser.getDeptId());
                 records.forEach(record -> {
                     deptIds.add(record.getInt("id"));
                 });

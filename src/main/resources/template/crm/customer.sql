@@ -154,4 +154,7 @@
     #sql ("deleteMember")
     update 72crm_crm_customer set rw_user_id = replace(rw_user_id,?,','),ro_user_id = replace(ro_user_id,?,',') where customer_id = ?
     #end
+    #sql ("updateDealStatusById")
+      update 72crm_crm_customer set deal_status = ? where customer_id = ?
+    #end
 #end

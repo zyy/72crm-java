@@ -123,6 +123,7 @@ export default {
 
   created() {
     this.getcrmMessagNum()
+    this.getcrmSettingConfig()
   },
 
   mounted() {},
@@ -149,24 +150,31 @@ export default {
         .dispatch('GetMessageNum')
         .then(res => {})
         .catch(() => {})
-    }
-  },
+    },
 
-  /**
-   * 新建客户同时新建联系人
-   */
-  // 创建数据页面 保存成功
-  createSaveSuccess(data) {
-    if (data && data.saveAndCreate) {
-      if (data.type == 'customer') {
-        this.createCRMType = 'contacts'
-        this.createActionInfo = {
-          type: 'relative',
-          crmType: 'customer',
-          data: {}
+    /**
+     * 获取客户管理配置信息
+     */
+    getcrmSettingConfig() {
+      this.$store.dispatch('CRMSettingConfig')
+    },
+
+    /**
+     * 新建客户同时新建联系人
+     */
+    // 创建数据页面 保存成功
+    createSaveSuccess(data) {
+      if (data && data.saveAndCreate) {
+        if (data.type == 'customer') {
+          this.createCRMType = 'contacts'
+          this.createActionInfo = {
+            type: 'relative',
+            crmType: 'customer',
+            data: {}
+          }
+          this.createActionInfo.data['customer'] = data.data
+          this.isCreate = true
         }
-        this.createActionInfo.data['customer'] = data.data
-        this.isCreate = true
       }
     }
   }

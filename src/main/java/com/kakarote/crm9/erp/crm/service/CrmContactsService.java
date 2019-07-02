@@ -108,10 +108,8 @@ public class CrmContactsService {
                 .set("下次联系时间",DateUtil.formatDateTime(record.get("next_time"))).set("职务",record.getStr("post"))
                 .set("手机",record.getStr("mobile")).set("电话",record.getStr("telephone")).set("邮箱",record.getStr("email"))
                 .set("地址",record.getStr("address")).set("备注",record.getStr("remark"));
-        List<Record> fields = adminFieldService.list("3");
-        for (Record r:fields){
-            field.set(r.getStr("name"),record.getStr(r.getStr("name")));
-        }
+        List<Record> recordList = Db.find("select name,value from 72crm_admin_fieldv where batch_id = ?",record.getStr("batch_id"));
+        fieldList.addAll(recordList);
         return fieldList;
     }
 
@@ -141,16 +139,27 @@ public class CrmContactsService {
      * @author wyq
      * 联系人关联商机
      */
-    public R relateBusiness(CrmContactsBusiness crmContactsBusiness){
-        return crmContactsBusiness.save() ? R.ok() : R.error();
+    public R relateBusiness(Integer contactsId, String businessIds){
+        String[] businessIdsArr = businessIds.split(",");
+        Db.delete("delete from 72crm_crm_contacts_business where contacts_id = ?",contactsId);
+        List<CrmContactsBusiness> crmContactsBusinessList = new ArrayList<>();
+        for (String id:businessIdsArr){
+            CrmContactsBusiness crmContactsBusiness = new CrmContactsBusiness();
+            crmContactsBusiness.setContactsId(contactsId);
+            crmContactsBusiness.setBusinessId(Integer.valueOf(id));
+            crmContactsBusinessList.add(crmContactsBusiness);
+        }
+        Db.batchSave(crmContactsBusinessList,100);
+        return R.ok();
     }
 
     /**
      * @author wyq
      * 联系人解除关联商机
      */
-    public R unrelateBusiness(Integer id){
-        return CrmContactsBusiness.dao.deleteById(id) ? R.ok() : R.error();
+    public R unrelateBusiness(Integer contactsId, String businessIds){
+        Db.delete("delete from 72crm_crm_contacts_business where contacts_id = ? and business_id in ("+businessIds+")",contactsId);
+        return R.ok();
     }
 
     /**
@@ -192,8 +201,10 @@ public class CrmContactsService {
             Record record =new Record();
             idsList.add(record.set("contacts_id",Integer.valueOf(id)));
         }
+        List<String> batchIdList = Db.query("select batch_id from 72crm_crm_contacts where contacts_id in ("+contactsIds+")");
         return Db.tx(() ->{
             Db.batch(Db.getSql("crm.contact.deleteByIds"),"contacts_id",idsList,100);
+            Db.batch("delete from 72crm_admin_fieldv where batch_id = ?","batch_id",batchIdList,100);
             return true;
         }) ? R.ok() : R.error();
     }
@@ -246,25 +257,38 @@ public class CrmContactsService {
      * @author wyq
      * 查询编辑字段
      */
-    public List<Record> queryField(Integer contactsId){
-        List<Record> fieldList = new LinkedList<>();
-        Record record = Db.findFirst("select * from contactsview where contacts_id = ?",contactsId);
-        String[] settingArr = new String[]{};
-        fieldUtil.getFixedField(fieldList,"name","姓名",record.getStr("name"),"text",settingArr,1);
+    public List<Record> queryField(Integer contactsId) {
+        Record contacts = Db.findFirst("select * from contactsview where contacts_id = ?",contactsId);
         List<Record> customerList = new ArrayList<>();
         Record customer = new Record();
-        customerList.add(customer.set("customer_id",record.getInt("customer_id")).set("customer_name",record.getStr("customer_name")));
-        fieldUtil.getFixedField(fieldList,"customerId","客户名称",customerList,"customer",settingArr,1);
-        fieldUtil.getFixedField(fieldList,"mobile","手机",record.getStr("mobile"),"mobile",settingArr,0);
-        fieldUtil.getFixedField(fieldList,"telephone","电话",record.getStr("telephone"),"text",settingArr,0);
-        fieldUtil.getFixedField(fieldList,"email","电子邮箱",record.getStr("email"),"email",settingArr,0);
-        fieldUtil.getFixedField(fieldList,"post","职务",record.getStr("post"),"text",settingArr,0);
-        fieldUtil.getFixedField(fieldList,"address","地址",record.getStr("address"),"text",settingArr,0);
-        fieldUtil.getFixedField(fieldList,"nextTime","下次联系时间",DateUtil.formatDateTime(record.get("next_time")),"datetime",settingArr,0);
-        fieldUtil.getFixedField(fieldList,"remark","备注",record.getStr("remark"),"text",settingArr,0);
-        fieldList.addAll(adminFieldService.queryByBatchId(record.getStr("batch_id")));
-        return fieldList;
+        customerList.add(customer.set("customer_id",contacts.getInt("customer_id")).set("customer_name",contacts.getStr("customer_name")));
+        contacts.set("customer_id",customerList);
+        return adminFieldService.queryUpdateField(3,contacts);
     }
+
+//    /**
+//     * @author wyq
+//     * 查询编辑字段
+//     */
+//    public List<Record> queryField(Integer contactsId){
+//        List<Record> fieldList = new LinkedList<>();
+//        Record record = Db.findFirst("select * from contactsview where contacts_id = ?",contactsId);
+//        String[] settingArr = new String[]{};
+//        fieldUtil.getFixedField(fieldList,"name","姓名",record.getStr("name"),"text",settingArr,1);
+//        List<Record> customerList = new ArrayList<>();
+//        Record customer = new Record();
+//        customerList.add(customer.set("customer_id",record.getInt("customer_id")).set("customer_name",record.getStr("customer_name")));
+//        fieldUtil.getFixedField(fieldList,"customerId","客户名称",customerList,"customer",settingArr,1);
+//        fieldUtil.getFixedField(fieldList,"mobile","手机",record.getStr("mobile"),"mobile",settingArr,0);
+//        fieldUtil.getFixedField(fieldList,"telephone","电话",record.getStr("telephone"),"text",settingArr,0);
+//        fieldUtil.getFixedField(fieldList,"email","电子邮箱",record.getStr("email"),"email",settingArr,0);
+//        fieldUtil.getFixedField(fieldList,"post","职务",record.getStr("post"),"text",settingArr,0);
+//        fieldUtil.getFixedField(fieldList,"address","地址",record.getStr("address"),"text",settingArr,0);
+//        fieldUtil.getFixedField(fieldList,"nextTime","下次联系时间",DateUtil.formatDateTime(record.get("next_time")),"datetime",settingArr,0);
+//        fieldUtil.getFixedField(fieldList,"remark","备注",record.getStr("remark"),"text",settingArr,0);
+//        fieldList.addAll(adminFieldService.queryByBatchId(record.getStr("batch_id")));
+//        return fieldList;
+//    }
 
     /**
      * @author wyq
@@ -348,19 +372,19 @@ public class CrmContactsService {
      * @author wyq
      * 导入联系人
      */
-    @Before(Tx.class)
     public R uploadExcel(UploadFile file, Integer repeatHandling, Integer ownerUserId) {
         ExcelReader reader = ExcelUtil.getReader(FileUtil.file(file.getUploadPath() + "\\" + file.getFileName()));
+        AdminFieldService adminFieldService = new AdminFieldService();
+        Kv kv = new Kv();
+        Integer errNum = 0;
         try {
             List<List<Object>> read = reader.read();
             List<Object> list = read.get(0);
-            AdminFieldService adminFieldService = new AdminFieldService();
-            Kv kv = new Kv();
             for (int i = 0; i < list.size(); i++) {
                 kv.set(list.get(i), i);
             }
-            List<Record> recordList = adminFieldService.list("3");
-            List<Record> fieldList = queryField();
+            List<Record> recordList = adminFieldService.customFieldList("3");
+            List<Record> fieldList = adminFieldService.queryAddField(3);
             fieldList.forEach(record -> {
                 if (record.getInt("is_null") == 1){
                     record.set("name",record.getStr("name")+"(*)");
@@ -371,9 +395,9 @@ public class CrmContactsService {
                 return R.error("请使用最新导入模板");
             }
             if (read.size() > 1) {
-                R status;
                 JSONObject object = new JSONObject();
                 for (int i = 1; i < read.size(); i++) {
+                    errNum = i;
                     List<Object> contactsList = read.get(i);
                     if (contactsList.size() < list.size()) {
                         for (int j = contactsList.size() - 1; j < list.size(); j++) {
@@ -385,7 +409,7 @@ public class CrmContactsService {
                     String mobile = contactsList.get(kv.getInt("手机"))!=null?contactsList.get(kv.getInt("手机")).toString():null;
                     Record  repeatField= Db.findFirst(Db.getSqlPara("crm.contact.queryRepeatFieldNumber",Kv.by("contactsName",contactsName).set("telephone",telephone).set("mobile",mobile)));
                     Integer number = repeatField.getInt("number");
-                    Integer customerId = Db.queryInt("select customer_id from 72crm_crm_customer where customer_name = ?",contactsList.get(kv.getInt("客户名称(*)")));
+                    Integer customerId = Db.queryInt("select customer_id from 72crm_crm_customer where customer_name = ?",contactsList.get(kv.getInt("客户名称(*)")!=null?kv.getInt("客户名称(*)"):kv.getInt("客户名称")));
                     if (0 == number) {
                         object.fluentPut("entity", new JSONObject().fluentPut("name", contactsName)
                                 .fluentPut("customer_id",customerId)
@@ -425,14 +449,14 @@ public class CrmContactsService {
                         jsonArray.add(JSONObject.parseObject(record.toJson()));
                     }
                     object.fluentPut("field", jsonArray);
-                    status = addOrUpdate(object);
-                    if ("500".equals(status.get("code"))) {
-                        return R.error("第" + i + "行错误!");
-                    }
+                    addOrUpdate(object);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+            if (errNum != 0){
+                return R.error("第" + (errNum+1) + "行错误!");
+            }
             return R.error();
         } finally {
             reader.close();

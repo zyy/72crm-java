@@ -3573,6 +3573,7 @@ INSERT INTO `72crm_crm_area` VALUES ('910101', '9101', '请选择');
 INSERT INTO `72crm_crm_area` VALUES ('910102', '9101', '市辖区');
 INSERT INTO `72crm_crm_area` VALUES ('910103', '9101', '澳门特区');
 
+
 -- ----------------------------
 -- View structure for fieldbusinessview
 -- ----------------------------

@@ -93,16 +93,15 @@ public class CrmContractService {
                 .set("客户签约人", record.getStr("contacts_name"))
                 .set("公司签约人", record.getStr("company_user_name")).
                 set("备注", record.getStr("remark"));
-        List<Record> fields = adminFieldService.list("6");
-        for (Record r:fields){
-            field.set(r.getStr("name"),record.getStr(r.getStr("name")));
-        }
+        List<Record> recordList = Db.find("select name,value from 72crm_admin_fieldv where batch_id = ?",record.getStr("batch_id"));
+        fieldList.addAll(recordList);
         return fieldList;
     }
 
     /**
      * 根据id删除合同
      */
+    @Before(Tx.class)
     public R deleteByIds(String contractIds) {
 
         String[] idsArr = contractIds.split(",");
@@ -110,15 +109,16 @@ public class CrmContractService {
         if (list.size() > 0) {
             return R.error("该数据已被其他模块引用，不能被删除！");
         }
-        List<Record> idsList = new ArrayList<>();
         for (String id : idsArr) {
-            Record record = new Record();
-            idsList.add(record.set("contract_id", Integer.valueOf(id)));
+            CrmContract contract = CrmContract.dao.findById(id);
+            if (contract != null) {
+                Db.delete("delete FROM 72crm_admin_fieldv where batch_id = ?", contract.getBatchId());
+            }
+            if (!CrmContract.dao.deleteById(id)){
+                return R.error();
+            }
         }
-        return Db.tx(() -> {
-            Db.batch(Db.getSql("crm.contract.deleteByIds"), "contract_id", idsList, 100);
-            return true;
-        }) ? R.ok() : R.error();
+        return R.ok();
     }
 
     /**
@@ -405,55 +405,88 @@ public class CrmContractService {
     }
 
     /**
+     * @author wyq
+     * 查询编辑字段
+     */
+    public List<Record> queryField(Integer contractId) {
+        Record contract = Db.findFirst("select * from contractview where contacts_id = ?",contractId);
+        List<Record> list = new ArrayList<>();
+        list.add(new Record().set("customer_id",contract.getInt("customer_id")).set("customer_name",contract.getStr("customer_name")));
+        contract.set("customer_id",list);
+        list = new ArrayList<>();
+        if (contract.getStr("business_id") != null && contract.getInt("business_id") != 0) {
+            list.add(new Record().set("business_id", contract.getInt("business_id")).set("business_name", contract.getStr("business_name")));
+        }
+        contract.set("business_id",list);
+        list = new ArrayList<>();
+        if (contract.getStr("contacts_id") != null && contract.getInt("contacts_id") != 0) {
+            list.add(new Record().set("contacts_id", contract.getStr("contacts_id")).set("name", contract.getStr("contacts_name")));
+        }
+        contract.set("contacts_id",list);
+        list = new ArrayList<>();
+        if (contract.getStr("company_user_id") != null && contract.getInt("company_user_id") != 0) {
+            list.add(new Record().set("company_user_id", contract.getStr("company_user_id")).set("realname", contract.getStr("company_user_name")));
+        }
+        contract.set("company_user_id",list);
+        List<Record> fieldList = adminFieldService.queryUpdateField(6,contract);
+        Record totalPrice = Db.findFirst("select IFNULL(SUM(subtotal),0) as total_price from 72crm_crm_contract_product where contract_id = ? ", contractId);
+        Kv kv = Kv.by("discount_rate", contract.getBigDecimal("discount_rate"))
+                .set("product", Db.find(Db.getSql("crm.contract.queryBusinessProduct"), contractId))
+                .set("total_price", totalPrice.getStr("total_price"));
+        fieldList.add(new Record().set("field_name","product").set("name","产品").set("value",kv).set("setting",new String[]{}).set("is_null",0).set("field_type",1));
+        return fieldList;
+    }
+
+    /**
      * @author zxy
      * 查询合同自定义字段（编辑）
      */
-    public List<Record> queryField(Integer contractId) {
-        List<Record> fieldList = new ArrayList<>();
-        Record record = Db.findFirst("select * from contractview where contract_id = ?", contractId);
-        String[] settingArr = new String[]{};
-        fieldUtil.getFixedField(fieldList, "num", "合同编号", record.getStr("num"), "number", settingArr, 1);
-        fieldUtil.getFixedField(fieldList, "name", "合同名称", record.getStr("name"), "text", settingArr, 1);
-        List<Record> customerList = new ArrayList<>();
-        Record customer = new Record();
-        customerList.add(customer.set("customerId", record.getInt("customer_id")).set("customerName", record.getStr("customer_name")));
-        fieldUtil.getFixedField(fieldList, "customerId", "客户名称", customerList, "customer", settingArr, 1);
-        customerList = new ArrayList<>();
-        if (record.getStr("business_id") != null && record.getInt("business_id") != 0) {
-            customer = new Record();
-            customerList.add(customer.set("businessId", record.getInt("business_id")).set("businessName", record.getStr("business_name")));
-        }
-
-        fieldUtil.getFixedField(fieldList, "businessId", "商机名称", customerList, "business", settingArr, 0);
-        fieldUtil.getFixedField(fieldList, "orderDate", "下单时间", DateUtil.formatDateTime(record.get("order_date")), "date", settingArr, 0);
-        fieldUtil.getFixedField(fieldList, "money", "合同金额", record.getStr("money"), "floatnumber", settingArr, 1);
-        fieldUtil.getFixedField(fieldList, "startTime", "合同开始时间", DateUtil.formatDateTime(record.get("start_time")), "date", settingArr, 0);
-        fieldUtil.getFixedField(fieldList, "endTime", "合同结束时间", DateUtil.formatDateTime(record.get("end_time")), "date", settingArr, 0);
-        customerList = new ArrayList<>();
-        if (record.getStr("contacts_id") != null && record.getInt("contacts_id") != 0) {
-            customer = new Record();
-            customerList.add(customer.set("contactsId", record.getStr("contacts_id")).set("name", record.getStr("contacts_name")));
-        }
-        fieldUtil.getFixedField(fieldList, "contactsId", "客户签约人", customerList, "contacts", settingArr, 0);
-        customerList = new ArrayList<>();
-        if (record.getStr("company_user_id") != null && record.getInt("company_user_id") != 0) {
-            customer = new Record();
-            customerList.add(customer.set("companyUserId", record.getStr("company_user_id")).set("realname", record.getStr("company_user_name")));
-        }
-        fieldUtil.getFixedField(fieldList, "companyUserId", "公司签约人", customerList, "user", settingArr, 0);
-        fieldUtil.getFixedField(fieldList, "remark", "备注", record.getStr("remark"), "textarea", settingArr, 0);
-        fieldList.addAll(adminFieldService.queryByBatchId(record.getStr("batch_id")));
-        Record r = Db.findFirst("select IFNULL(SUM(subtotal),0) as total_price \n" +
-                "    from 72crm_crm_contract_product    \n" +
-                "    where contract_id = ? ", contractId);
-
-        Kv kv = Kv.by("discount_rate", record.getBigDecimal("discount_rate"))
-                .set("product", Db.find(Db.getSql("crm.contract.queryBusinessProduct"), contractId))
-                .set("total_price", r.getStr("total_price"));
-
-        fieldUtil.getFixedField(fieldList, "product", "产品", kv, "product", settingArr, 0);
-        return fieldList;
-    }
+//    public List<Record> queryField(Integer contractId) {
+//        List<Record> fieldList = new ArrayList<>();
+//        Record record = Db.findFirst("select * from contractview where contract_id = ?", contractId);
+//        String[] settingArr = new String[]{};
+//        fieldUtil.getFixedField(fieldList, "num", "合同编号", record.getStr("num"), "number", settingArr, 1);
+//        fieldUtil.getFixedField(fieldList, "name", "合同名称", record.getStr("name"), "text", settingArr, 1);
+//        List<Record> customerList = new ArrayList<>();
+//        Record customer = new Record();
+//        customerList.add(customer.set("customerId", record.getInt("customer_id")).set("customerName", record.getStr("customer_name")));
+//        fieldUtil.getFixedField(fieldList, "customerId", "客户名称", customerList, "customer", settingArr, 1);
+//        customerList = new ArrayList<>();
+//        if (record.getStr("business_id") != null && record.getInt("business_id") != 0) {
+//            customer = new Record();
+//            customerList.add(customer.set("businessId", record.getInt("business_id")).set("businessName", record.getStr("business_name")));
+//        }
+//
+//        fieldUtil.getFixedField(fieldList, "businessId", "商机名称", customerList, "business", settingArr, 0);
+//        fieldUtil.getFixedField(fieldList, "orderDate", "下单时间", DateUtil.formatDateTime(record.get("order_date")), "date", settingArr, 0);
+//        fieldUtil.getFixedField(fieldList, "money", "合同金额", record.getStr("money"), "floatnumber", settingArr, 1);
+//        fieldUtil.getFixedField(fieldList, "startTime", "合同开始时间", DateUtil.formatDateTime(record.get("start_time")), "date", settingArr, 0);
+//        fieldUtil.getFixedField(fieldList, "endTime", "合同结束时间", DateUtil.formatDateTime(record.get("end_time")), "date", settingArr, 0);
+//        customerList = new ArrayList<>();
+//        if (record.getStr("contacts_id") != null && record.getInt("contacts_id") != 0) {
+//            customer = new Record();
+//            customerList.add(customer.set("contactsId", record.getStr("contacts_id")).set("name", record.getStr("contacts_name")));
+//        }
+//        fieldUtil.getFixedField(fieldList, "contactsId", "客户签约人", customerList, "contacts", settingArr, 0);
+//        customerList = new ArrayList<>();
+//        if (record.getStr("company_user_id") != null && record.getInt("company_user_id") != 0) {
+//            customer = new Record();
+//            customerList.add(customer.set("companyUserId", record.getStr("company_user_id")).set("realname", record.getStr("company_user_name")));
+//        }
+//        fieldUtil.getFixedField(fieldList, "companyUserId", "公司签约人", customerList, "user", settingArr, 0);
+//        fieldUtil.getFixedField(fieldList, "remark", "备注", record.getStr("remark"), "textarea", settingArr, 0);
+//        fieldList.addAll(adminFieldService.queryByBatchId(record.getStr("batch_id")));
+//        Record r = Db.findFirst("select IFNULL(SUM(subtotal),0) as total_price \n" +
+//                "    from 72crm_crm_contract_product    \n" +
+//                "    where contract_id = ? ", contractId);
+//
+//        Kv kv = Kv.by("discount_rate", record.getBigDecimal("discount_rate"))
+//                .set("product", Db.find(Db.getSql("crm.contract.queryBusinessProduct"), contractId))
+//                .set("total_price", r.getStr("total_price"));
+//
+//        fieldUtil.getFixedField(fieldList, "product", "产品", kv, "product", settingArr, 0);
+//        return fieldList;
+//    }
 
     /**
      * @author wyq
@@ -543,7 +576,7 @@ public class CrmContractService {
      */
     @Before(Tx.class)
     public R setContractConfig(Integer status,Integer contractDay){
-        Integer number = Db.update("update 72crm_admin_config set status = ?,value = ? where name = 'expiringContractDays'",status,contractDay);
+        Integer number = Db.update(Db.getSqlPara("crm.contract.setContractConfig",Kv.by("status",status).set("contractDay",contractDay)));
         if (0 == number){
             AdminConfig adminConfig = new AdminConfig();
             adminConfig.setStatus(0);

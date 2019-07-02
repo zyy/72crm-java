@@ -183,8 +183,9 @@
       </div>
     </div>
     <div class="footer">
-      <span @click="commentBtn(data)"
-            class="comment">回复</span>
+      <el-button type="primary"
+                 icon="el-icon-chat-line-round"
+                 @click="commentBtn(data)">回复</el-button>
       <!-- <img @click="commentBtn(item)" class="comment" src="@/assets/img/journal_comment.png"> -->
     </div>
     <!-- 底部评论 -->
@@ -218,6 +219,7 @@
   </div>
 </template>
 <script type="text/javascript">
+import xss from 'xss'
 import emoji from '@/components/emoji'
 // API
 import { journalSetread } from '@/api/oamanagement/journal'
@@ -444,7 +446,7 @@ export default {
           typeId: item.typeId,
           mainId: item.mainId == 0 ? item.commentId : item.mainId,
           type: 2,
-          content: this.childCommentsTextarea
+          content: xss(this.childCommentsTextarea)
         })
           .then(res => {
             this.childCommentsPopover = false
@@ -477,7 +479,7 @@ export default {
         setCommentAPI({
           typeId: this.showWorkbench ? this.data.actionId : this.data.logId,
           type: 2, // 1 任务 2 日志
-          content: this.commentsTextarea
+          content: xss(this.commentsTextarea)
         })
           .then(res => {
             // 插入一条数据

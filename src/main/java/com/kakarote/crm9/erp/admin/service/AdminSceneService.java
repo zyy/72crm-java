@@ -151,7 +151,7 @@ public class AdminSceneService {
             return R.error("场景label不符合要求！");
         }
         recordList = fieldUtil.getRecordList();
-        List<Record> records = adminFieldService.list(label.toString());
+        List<Record> records = adminFieldService.customFieldList(label.toString());
         if (recordList != null && records != null) {
             for (Record r : records){
                 r.set("field_name",r.getStr("name"));
