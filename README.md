@@ -17,7 +17,8 @@
 
 微信交流群：
 
-<img src="https://images.gitee.com/uploads/images/2019/0620/194950_6788b838_345098.png" width="400">
+<img src="https://images.gitee.com/uploads/images/2019/0702/194622_93612f8f_345098.png" width="400">
+
 
 
 悟空CRM采用全新的前后端分离模式，本仓库代码中已集成前端vue打包后文件，可免去打包操作
