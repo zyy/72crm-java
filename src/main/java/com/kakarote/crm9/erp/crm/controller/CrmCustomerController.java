@@ -352,14 +352,6 @@ public class CrmCustomerController extends Controller {
     }
 
     /**
-     * @author HJP
-     * 员工客户分析
-     */
-    public void getUserCustomerAnalysis(BasePageRequest<AdminUser> basePageRequest){
-        renderJson(crmCustomerService.getUserCustomerAnalysis(basePageRequest));
-    }
-
-    /**
      * @author wyq
      * 客户批量导出
      */

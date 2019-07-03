@@ -492,34 +492,6 @@ public class CrmCustomerService {
         return fieldList;
     }
 
-    /**
-     * @author wyq
-     * 查询编辑字段
-     */
-//    public List<Record> queryField(Integer customerId) {
-//
-//        List<Record> fieldList = new LinkedList<>();
-//        Record record = Db.findFirst("select * from customerview where customer_id = ?", customerId);
-//        String[] settingArr = new String[]{};
-//        fieldUtil.getFixedField(fieldList, "customerName", "客户名称", record.getStr("customer_name"), "text", settingArr, 1);
-//        fieldUtil.getFixedField(fieldList, "mobile", "手机", record.getStr("mobile"), "text", settingArr, 0);
-//        fieldUtil.getFixedField(fieldList, "telephone", "电话", record.getStr("telephone"), "text", settingArr, 0);
-//        fieldUtil.getFixedField(fieldList, "website", "网址", record.getStr("website"), "text", settingArr, 0);
-//        fieldUtil.getFixedField(fieldList, "nextTime", "下次联系时间", DateUtil.formatDateTime(record.get("next_time")), "datetime", settingArr, 0);
-//        fieldUtil.getFixedField(fieldList, "remark", "备注", record.getStr("remark"), "text", settingArr, 0);
-//        Record map = new Record();
-//        fieldList.add(map.set("fieldName", "map_address")
-//                .set("name", "地区定位")
-//                .set("value", Kv.by("location", record.getStr("location"))
-//                        .set("address", record.getStr("address"))
-//                        .set("detailAddress", record.getStr("detail_address"))
-//                        .set("lng", record.getStr("lng"))
-//                        .set("lat", record.getStr("lat")))
-//                .set("formType", "map_address")
-//                .set("isNull", 0));
-//        fieldList.addAll(adminFieldService.queryByBatchId(record.getStr("batch_id")));
-//        return fieldList;
-//    }
 
     /**
      * @author wyq
@@ -546,24 +518,6 @@ public class CrmCustomerService {
             oaEventRelation.setCreateTime(DateUtil.date());
             oaEventRelation.save();
         }
-//        if (adminRecord.getBusinessIds() != null) {
-//            String[] businessIdsArr = adminRecord.getBusinessIds().split(",");
-//            for (String busienssId : businessIdsArr) {
-//                AdminRecord businessRecord = adminRecord.build();
-//                businessRecord.setTypes("crm_business");
-//                businessRecord.setTypesId(Integer.parseInt(busienssId));
-//                businessRecord.save();
-//            }
-//        }
-//        if (adminRecord.getContactsIds() != null) {
-//            String[] contactsIdsArr = adminRecord.getContactsIds().split(",");
-//            for (String contactsId : contactsIdsArr) {
-//                AdminRecord contactsRecord = adminRecord.build();
-//                contactsRecord.setTypes("crm_contacts");
-//                contactsRecord.setTypesId(Integer.parseInt(contactsId));
-//                contactsRecord.save();
-//            }
-//        }
         if (adminRecord.getNextTime() != null) {
             Date nextTime = adminRecord.getNextTime();
             CrmCustomer crmCustomer = new CrmCustomer();
@@ -622,55 +576,6 @@ public class CrmCustomerService {
         });
         return recordList;
     }
-
-    /**
-     * @author HJP
-     * 员工客户分析
-     */
-//    public R getUserCustomerAnalysis(BasePageRequest<AdminUser> basePageRequest) {
-//        AdminUser adminUser = basePageRequest.getData();
-//        String sql = "select max(au.user_id) user_id,max(au.realname) realname,max(au.username) username,max(au.dept_id) dept_id,count(dd.customer_id) customerNum,max(sc.sc) finishCustomerNum,convert(max(sc.sc)*100/count(dd.customer_id),decimal(15,2)) finishCustomerR,sum(contractMoney) contractMoney,sum(receivablesMoney) receivablesMoney,sum(unfinishReR) unfinishReR,sum(reFinishR) reFinishR \n";
-//        StringBuilder stringBuilder = new StringBuilder();
-//        if (adminUser.getDeptId() != null) {
-//            stringBuilder.append(" and dept_id = ").append(adminUser.getDeptId());
-//        }
-//        if (adminUser.getUserId() != null) {
-//            stringBuilder.append(" and user_id = ").append(adminUser.getUserId());
-//        }
-//        StringBuffer where2 = new StringBuffer();
-//        StringBuffer where3 = new StringBuffer();
-//        if (adminUser.getStartTime() != null) {
-//            where2.append(" and contract.create_time >= ").append(adminUser.getStartTime());
-//            where2.append(" and cc.create_time >= ").append(adminUser.getStartTime());
-//            where2.append(" and cr.create_time >= ").append(adminUser.getStartTime());
-//            where3.append(" and create_time >= ").append(adminUser.getStartTime());
-//        }
-//        if (adminUser.getEndTime() != null) {
-//            where2.append(" and contract.create_time <= ").append(adminUser.getEndTime());
-//            where2.append(" and cc.create_time <= ").append(adminUser.getEndTime());
-//            where2.append(" and cr.create_time <= ").append(adminUser.getEndTime());
-//            where3.append(" and create_time <= ").append(adminUser.getEndTime());
-//        }
-//        String from = "from 72crm_admin_user au \n"
-//                + "left join(select cc.customer_id,max(cc.owner_user_id) owner_user_id,sum(contract.money) contractMoney,sum(cr.money) receivablesMoney,(sum(contract.money)-sum(cr.money)) as unfinishReR ,convert(sum(cr.money)*100/sum(contract.money),decimal(15,2)) as reFinishR  \n"
-//                + "from 72crm_crm_customer cc \n"
-//                + "left join 72crm_crm_contract contract \n"
-//                + "on cc.customer_id=contract.customer_id \n"
-//                + "left join 72crm_crm_receivables cr \n"
-//                + "on cc.customer_id=cr.customer_id where 1=1\n"
-//                + where2 + "\n"
-//                + "group by cc.customer_id) as dd \n"
-//                + "on au.user_id=dd.owner_user_id \n"
-//                + "left join (select owner_user_id,count(case when deal_status='成交' then customer_id end) as sc \n"
-//                + "from 72crm_crm_customer where 1=1 \n"
-//                + where3 + "\n"
-//                + "group by owner_user_id) sc on au.user_id=sc.owner_user_id \n"
-//                + "where au.status = 1 \n"
-//                + stringBuilder.toString() + "\n"
-//                + "group by au.user_id";
-//        List<Record> records = Db.find(sql + from);
-//        return R.ok().put("data", records);
-//    }
 
     /**
      * @author wyq

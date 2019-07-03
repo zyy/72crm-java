@@ -38,6 +38,7 @@ public class AuthUtil {
             userIdList.addAll(Db.query("select user_id from 72crm_admin_user where dept_id = ?",deptId));
         }else if (dataAuth.contains(2)){
             userIdList.addAll(adminUserService.queryChileUserIds(BaseUtil.getUserId(),BaseConstant.AUTH_DATA_RECURSION_NUM));
+            userIdList.add(BaseUtil.getUserId());
         }else if (dataAuth.contains(1)){
             userIdList.add(BaseUtil.getUserId());
         }
