@@ -195,12 +195,12 @@ public class AdminFieldService {
             if (type == 10) {
                 sql.append(String.format("GROUP_CONCAT(if(a.name = '%s',b.realname,null)) AS `%s`,", name, name));
                 if (userJoin.length() == 0) {
-                    userJoin.append(" left join 72crm_admin_user b on find_in_set(dept_id,ifnull(value,0))");
+                    userJoin.append(" left join 72crm_admin_user b on find_in_set(user_id,ifnull(value,0))");
                 }
             } else if (type == 12) {
                 sql.append(String.format("GROUP_CONCAT(if(a.name = '%s',c.name,null)) AS `%s`,", name, name));
                 if (deptJoin.length() == 0) {
-                    deptJoin.append(" left join 72crm_admin_dept c on find_in_set(dept_id,ifnull(value,0))");
+                    deptJoin.append(" left join 72crm_admin_dept c on find_in_set(c.dept_id,ifnull(value,0))");
                 }
             } else {
                 sql.append(String.format("max(if(a.name = '%s',value, null)) AS `%s`,", name, name));

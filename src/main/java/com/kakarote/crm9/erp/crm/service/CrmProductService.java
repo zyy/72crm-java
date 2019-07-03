@@ -152,7 +152,7 @@ public class CrmProductService {
         } else {
             a = "上架";
         }
-        StringBuilder sqlfield = new StringBuilder("update 72crm_admin_field set value = '" + a + "' where name = '是否上下架' and batch_id in ( ");
+        StringBuilder sqlfield = new StringBuilder("update 72crm_admin_fieldv set value = '" + a + "' where name = '是否上下架' and batch_id in ( ");
         sqlfield.append(batchIds.toString());
         sqlfield.append(" )");
         int f = Db.update(sqlfield.toString());

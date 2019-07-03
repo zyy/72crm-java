@@ -256,7 +256,7 @@ public class CrmCustomerService {
             Record record = new Record();
             idsList.add(record.set("customer_id", Integer.valueOf(id)));
         }
-        List<String> batchIdList = Db.query("select batch_id from 72crm_crm_customer where customer_id in ("+customerIds+")");
+        List<Record> batchIdList = Db.find(Db.getSqlPara("crm.customer.queryBatchIdByIds",Kv.by("ids",idsArr)));
         return Db.tx(() -> {
             Db.batch(Db.getSql("crm.customer.deleteByIds"), "customer_id", idsList, 100);
             Db.batch("delete from 72crm_admin_fieldv where batch_id = ?","batch_id",batchIdList,100);
@@ -627,50 +627,50 @@ public class CrmCustomerService {
      * @author HJP
      * 员工客户分析
      */
-    public R getUserCustomerAnalysis(BasePageRequest<AdminUser> basePageRequest) {
-        AdminUser adminUser = basePageRequest.getData();
-        String sql = "select max(au.user_id) user_id,max(au.realname) realname,max(au.username) username,max(au.dept_id) dept_id,count(dd.customer_id) customerNum,max(sc.sc) finishCustomerNum,convert(max(sc.sc)*100/count(dd.customer_id),decimal(15,2)) finishCustomerR,sum(contractMoney) contractMoney,sum(receivablesMoney) receivablesMoney,sum(unfinishReR) unfinishReR,sum(reFinishR) reFinishR \n";
-        StringBuilder stringBuilder = new StringBuilder();
-        if (adminUser.getDeptId() != null) {
-            stringBuilder.append(" and dept_id = ").append(adminUser.getDeptId());
-        }
-        if (adminUser.getUserId() != null) {
-            stringBuilder.append(" and user_id = ").append(adminUser.getUserId());
-        }
-        StringBuffer where2 = new StringBuffer();
-        StringBuffer where3 = new StringBuffer();
-        if (adminUser.getStartTime() != null) {
-            where2.append(" and contract.create_time >= ").append(adminUser.getStartTime());
-            where2.append(" and cc.create_time >= ").append(adminUser.getStartTime());
-            where2.append(" and cr.create_time >= ").append(adminUser.getStartTime());
-            where3.append(" and create_time >= ").append(adminUser.getStartTime());
-        }
-        if (adminUser.getEndTime() != null) {
-            where2.append(" and contract.create_time <= ").append(adminUser.getEndTime());
-            where2.append(" and cc.create_time <= ").append(adminUser.getEndTime());
-            where2.append(" and cr.create_time <= ").append(adminUser.getEndTime());
-            where3.append(" and create_time <= ").append(adminUser.getEndTime());
-        }
-        String from = "from 72crm_admin_user au \n"
-                + "left join(select cc.customer_id,max(cc.owner_user_id) owner_user_id,sum(contract.money) contractMoney,sum(cr.money) receivablesMoney,(sum(contract.money)-sum(cr.money)) as unfinishReR ,convert(sum(cr.money)*100/sum(contract.money),decimal(15,2)) as reFinishR  \n"
-                + "from 72crm_crm_customer cc \n"
-                + "left join 72crm_crm_contract contract \n"
-                + "on cc.customer_id=contract.customer_id \n"
-                + "left join 72crm_crm_receivables cr \n"
-                + "on cc.customer_id=cr.customer_id where 1=1\n"
-                + where2 + "\n"
-                + "group by cc.customer_id) as dd \n"
-                + "on au.user_id=dd.owner_user_id \n"
-                + "left join (select owner_user_id,count(case when deal_status='成交' then customer_id end) as sc \n"
-                + "from 72crm_crm_customer where 1=1 \n"
-                + where3 + "\n"
-                + "group by owner_user_id) sc on au.user_id=sc.owner_user_id \n"
-                + "where au.status = 1 \n"
-                + stringBuilder.toString() + "\n"
-                + "group by au.user_id";
-        List<Record> records = Db.find(sql + from);
-        return R.ok().put("data", records);
-    }
+//    public R getUserCustomerAnalysis(BasePageRequest<AdminUser> basePageRequest) {
+//        AdminUser adminUser = basePageRequest.getData();
+//        String sql = "select max(au.user_id) user_id,max(au.realname) realname,max(au.username) username,max(au.dept_id) dept_id,count(dd.customer_id) customerNum,max(sc.sc) finishCustomerNum,convert(max(sc.sc)*100/count(dd.customer_id),decimal(15,2)) finishCustomerR,sum(contractMoney) contractMoney,sum(receivablesMoney) receivablesMoney,sum(unfinishReR) unfinishReR,sum(reFinishR) reFinishR \n";
+//        StringBuilder stringBuilder = new StringBuilder();
+//        if (adminUser.getDeptId() != null) {
+//            stringBuilder.append(" and dept_id = ").append(adminUser.getDeptId());
+//        }
+//        if (adminUser.getUserId() != null) {
+//            stringBuilder.append(" and user_id = ").append(adminUser.getUserId());
+//        }
+//        StringBuffer where2 = new StringBuffer();
+//        StringBuffer where3 = new StringBuffer();
+//        if (adminUser.getStartTime() != null) {
+//            where2.append(" and contract.create_time >= ").append(adminUser.getStartTime());
+//            where2.append(" and cc.create_time >= ").append(adminUser.getStartTime());
+//            where2.append(" and cr.create_time >= ").append(adminUser.getStartTime());
+//            where3.append(" and create_time >= ").append(adminUser.getStartTime());
+//        }
+//        if (adminUser.getEndTime() != null) {
+//            where2.append(" and contract.create_time <= ").append(adminUser.getEndTime());
+//            where2.append(" and cc.create_time <= ").append(adminUser.getEndTime());
+//            where2.append(" and cr.create_time <= ").append(adminUser.getEndTime());
+//            where3.append(" and create_time <= ").append(adminUser.getEndTime());
+//        }
+//        String from = "from 72crm_admin_user au \n"
+//                + "left join(select cc.customer_id,max(cc.owner_user_id) owner_user_id,sum(contract.money) contractMoney,sum(cr.money) receivablesMoney,(sum(contract.money)-sum(cr.money)) as unfinishReR ,convert(sum(cr.money)*100/sum(contract.money),decimal(15,2)) as reFinishR  \n"
+//                + "from 72crm_crm_customer cc \n"
+//                + "left join 72crm_crm_contract contract \n"
+//                + "on cc.customer_id=contract.customer_id \n"
+//                + "left join 72crm_crm_receivables cr \n"
+//                + "on cc.customer_id=cr.customer_id where 1=1\n"
+//                + where2 + "\n"
+//                + "group by cc.customer_id) as dd \n"
+//                + "on au.user_id=dd.owner_user_id \n"
+//                + "left join (select owner_user_id,count(case when deal_status='成交' then customer_id end) as sc \n"
+//                + "from 72crm_crm_customer where 1=1 \n"
+//                + where3 + "\n"
+//                + "group by owner_user_id) sc on au.user_id=sc.owner_user_id \n"
+//                + "where au.status = 1 \n"
+//                + stringBuilder.toString() + "\n"
+//                + "group by au.user_id";
+//        List<Record> records = Db.find(sql + from);
+//        return R.ok().put("data", records);
+//    }
 
     /**
      * @author wyq

@@ -157,4 +157,12 @@
     #sql ("updateDealStatusById")
       update 72crm_crm_customer set deal_status = ? where customer_id = ?
     #end
+
+    #sql ("queryBatchIdByIds")
+    select batch_id from 72crm_crm_customer where customer_id in (
+        #for(i:ids)
+          #(for.index > 0 ? "," : "")#para(i)
+        #end
+    )
+    #end
 #end
