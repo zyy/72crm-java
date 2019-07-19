@@ -17,7 +17,7 @@ CREATE TABLE `72crm_admin_config` (
   `value` varchar(255) DEFAULT NULL COMMENT '值',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   PRIMARY KEY (`setting_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COMMENT='客户规则';
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='客户规则';
 
 -- ----------------------------
 -- Records of 72crm_admin_config
@@ -3572,89 +3572,3 @@ INSERT INTO `72crm_crm_area` VALUES ('9101', '91', '澳门特区');
 INSERT INTO `72crm_crm_area` VALUES ('910101', '9101', '请选择');
 INSERT INTO `72crm_crm_area` VALUES ('910102', '9101', '市辖区');
 INSERT INTO `72crm_crm_area` VALUES ('910103', '9101', '澳门特区');
-
-
--- ----------------------------
--- View structure for fieldbusinessview
--- ----------------------------
-DROP VIEW IF EXISTS `fieldbusinessview`;
-CREATE SQL SECURITY DEFINER VIEW `fieldbusinessview` AS select `a`.`batch_id` AS `field_batch_id` from `72crm_admin_field` `a` where ((`a`.`label` = 5) and (`a`.`batch_id` is not null) and (`a`.`batch_id` <> '')) group by `a`.`batch_id` ;
-
--- ----------------------------
--- View structure for fieldcontactsview
--- ----------------------------
-DROP VIEW IF EXISTS `fieldcontactsview`;
-CREATE SQL SECURITY DEFINER VIEW `fieldcontactsview` AS select max(if((`a`.`name` = '是否关键决策人'),`a`.`value`,NULL)) AS `是否关键决策人`,max(if((`a`.`name` = '性别'),`a`.`value`,NULL)) AS `性别`,`a`.`batch_id` AS `field_batch_id` from `72crm_admin_field` `a` where ((`a`.`label` = 3) and (`a`.`batch_id` is not null) and (`a`.`batch_id` <> '')) group by `a`.`batch_id` ;
-
--- ----------------------------
--- View structure for fieldcontractview
--- ----------------------------
-DROP VIEW IF EXISTS `fieldcontractview`;
-CREATE SQL SECURITY DEFINER VIEW `fieldcontractview` AS select group_concat(if((`a`.`name` = '部门'),`c`.`name`,NULL) separator ',') AS `部门`,`a`.`batch_id` AS `field_batch_id` from (`72crm_admin_field` `a` left join `72crm_admin_dept` `c` on(find_in_set(`c`.`dept_id`,ifnull(`a`.`value`,0)))) where ((`a`.`label` = 6) and (`a`.`batch_id` is not null) and (`a`.`batch_id` <> '')) group by `a`.`batch_id` ;
-
--- ----------------------------
--- View structure for fieldcustomerview
--- ----------------------------
-DROP VIEW IF EXISTS `fieldcustomerview`;
-CREATE SQL SECURITY DEFINER VIEW `fieldcustomerview` AS select max(if((`a`.`name` = '客户级别'),`a`.`value`,NULL)) AS `客户级别`,max(if((`a`.`name` = '客户来源'),`a`.`value`,NULL)) AS `客户来源`,max(if((`a`.`name` = '客户行业'),`a`.`value`,NULL)) AS `客户行业`,`a`.`batch_id` AS `field_batch_id` from `72crm_admin_field` `a` where ((`a`.`label` = 2) and (`a`.`batch_id` is not null) and (`a`.`batch_id` <> '')) group by `a`.`batch_id` ;
-
--- ----------------------------
--- View structure for fieldleadsview
--- ----------------------------
-DROP VIEW IF EXISTS `fieldleadsview`;
-CREATE SQL SECURITY DEFINER VIEW `fieldleadsview` AS select max(if((`a`.`name` = '线索来源'),`a`.`value`,NULL)) AS `线索来源`,max(if((`a`.`name` = '客户行业'),`a`.`value`,NULL)) AS `客户行业`,max(if((`a`.`name` = '客户级别'),`a`.`value`,NULL)) AS `客户级别`,group_concat(if((`a`.`name` = '部门'),`c`.`name`,NULL) separator ',') AS `部门`,`a`.`batch_id` AS `field_batch_id` from (`72crm_admin_field` `a` left join `72crm_admin_dept` `c` on(find_in_set(`c`.`dept_id`,ifnull(`a`.`value`,0)))) where ((`a`.`label` = 1) and (`a`.`batch_id` is not null) and (`a`.`batch_id` <> '')) group by `a`.`batch_id` ;
-
--- ----------------------------
--- View structure for fieldproductview
--- ----------------------------
-DROP VIEW IF EXISTS `fieldproductview`;
-CREATE SQL SECURITY DEFINER VIEW `fieldproductview` AS select max(if((`a`.`name` = '是否上下架'),`a`.`value`,NULL)) AS `是否上下架`,max(if((`a`.`name` = '单位'),`a`.`value`,NULL)) AS `单位`,max(if((`a`.`name` = '产品颜色'),`a`.`value`,NULL)) AS `产品颜色`,`a`.`batch_id` AS `field_batch_id` from `72crm_admin_field` `a` where ((`a`.`label` = 4) and (`a`.`batch_id` is not null) and (`a`.`batch_id` <> '')) group by `a`.`batch_id` ;
-
--- ----------------------------
--- View structure for fieldreceivablesview
--- ----------------------------
-DROP VIEW IF EXISTS `fieldreceivablesview`;
-CREATE SQL SECURITY DEFINER VIEW `fieldreceivablesview` AS select max(if((`a`.`name` = '回款方式'),`a`.`value`,NULL)) AS `回款方式`,`a`.`batch_id` AS `field_batch_id` from `72crm_admin_field` `a` where ((`a`.`label` = 7) and (`a`.`batch_id` is not null) and (`a`.`batch_id` <> '')) group by `a`.`batch_id` ;
-
-
--- ----------------------------
--- View structure for businessview
--- ----------------------------
-DROP VIEW IF EXISTS `businessview`;
-CREATE SQL SECURITY DEFINER VIEW `businessview` AS select `a`.`business_id` AS `business_id`,`a`.`type_id` AS `type_id`,`a`.`status_id` AS `status_id`,`a`.`next_time` AS `next_time`,`a`.`customer_id` AS `customer_id`,`a`.`deal_date` AS `deal_date`,`a`.`business_name` AS `business_name`,`a`.`money` AS `money`,`a`.`discount_rate` AS `discount_rate`,`a`.`remark` AS `remark`,`a`.`create_user_id` AS `create_user_id`,`a`.`owner_user_id` AS `owner_user_id`,`a`.`create_time` AS `create_time`,`a`.`update_time` AS `update_time`,`a`.`batch_id` AS `batch_id`,`a`.`ro_user_id` AS `ro_user_id`,`a`.`rw_user_id` AS `rw_user_id`,`a`.`is_end` AS `is_end`,`a`.`status_remark` AS `status_remark`,`b`.`realname` AS `create_user_name`,`c`.`realname` AS `owner_user_name`,`d`.`customer_name` AS `customer_name`,`e`.`name` AS `type_name`,`f`.`name` AS `status_name`,`z`.`field_batch_id` AS `field_batch_id` from ((((((`72crm_crm_business` `a` left join `72crm_admin_user` `b` on((`a`.`create_user_id` = `b`.`user_id`))) left join `72crm_admin_user` `c` on((`a`.`owner_user_id` = `c`.`user_id`))) left join `72crm_crm_customer` `d` on((`a`.`customer_id` = `d`.`customer_id`))) left join `72crm_crm_business_type` `e` on((`a`.`type_id` = `e`.`type_id`))) left join `72crm_crm_business_status` `f` on((`a`.`status_id` = `f`.`status_id`))) left join `fieldbusinessview` `z` on((convert(`a`.`batch_id` using utf8mb4) = `z`.`field_batch_id`))) ;
-
--- ----------------------------
--- View structure for contactsview
--- ----------------------------
-DROP VIEW IF EXISTS `contactsview`;
-CREATE SQL SECURITY DEFINER VIEW `contactsview` AS select `a`.`contacts_id` AS `contacts_id`,`a`.`name` AS `name`,`a`.`next_time` AS `next_time`,`a`.`mobile` AS `mobile`,`a`.`telephone` AS `telephone`,`a`.`email` AS `email`,`a`.`post` AS `post`,`a`.`customer_id` AS `customer_id`,`a`.`address` AS `address`,`a`.`remark` AS `remark`,`a`.`create_user_id` AS `create_user_id`,`a`.`owner_user_id` AS `owner_user_id`,`a`.`create_time` AS `create_time`,`a`.`update_time` AS `update_time`,`a`.`batch_id` AS `batch_id`,`a`.`name` AS `contacts_name`,`b`.`realname` AS `create_user_name`,`c`.`realname` AS `owner_user_name`,`d`.`customer_name` AS `customer_name`,`z`.`是否关键决策人` AS `是否关键决策人`,`z`.`性别` AS `性别`,`z`.`field_batch_id` AS `field_batch_id` from ((((`72crm_crm_contacts` `a` left join `72crm_admin_user` `b` on((`a`.`create_user_id` = `b`.`user_id`))) left join `72crm_admin_user` `c` on((`a`.`owner_user_id` = `c`.`user_id`))) left join `72crm_crm_customer` `d` on((`a`.`customer_id` = `d`.`customer_id`))) left join `fieldcontactsview` `z` on((convert(`a`.`batch_id` using utf8mb4) = `z`.`field_batch_id`))) ;
-
--- ----------------------------
--- View structure for contractview
--- ----------------------------
-DROP VIEW IF EXISTS `contractview`;
-CREATE SQL SECURITY DEFINER VIEW `contractview` AS select `a`.`contract_id` AS `contract_id`,`a`.`name` AS `name`,`a`.`customer_id` AS `customer_id`,`a`.`business_id` AS `business_id`,`a`.`check_status` AS `check_status`,`a`.`examine_record_id` AS `examine_record_id`,`a`.`order_date` AS `order_date`,`a`.`create_user_id` AS `create_user_id`,`a`.`owner_user_id` AS `owner_user_id`,`a`.`create_time` AS `create_time`,`a`.`update_time` AS `update_time`,`a`.`num` AS `num`,`a`.`start_time` AS `start_time`,`a`.`end_time` AS `end_time`,`a`.`money` AS `money`,`a`.`discount_rate` AS `discount_rate`,`a`.`types` AS `types`,`a`.`payment_type` AS `payment_type`,`a`.`batch_id` AS `batch_id`,`a`.`ro_user_id` AS `ro_user_id`,`a`.`rw_user_id` AS `rw_user_id`,`a`.`contacts_id` AS `contacts_id`,`a`.`remark` AS `remark`,`a`.`company_user_id` AS `company_user_id`,`b`.`realname` AS `create_user_name`,`c`.`realname` AS `owner_user_name`,`d`.`customer_name` AS `customer_name`,`e`.`business_name` AS `business_name`,`f`.`name` AS `contacts_name`,`g`.`realname` AS `company_user_name`,`z`.`部门` AS `部门`,`z`.`field_batch_id` AS `field_batch_id` from (((((((`72crm_crm_contract` `a` left join `72crm_admin_user` `b` on((`a`.`create_user_id` = `b`.`user_id`))) left join `72crm_admin_user` `c` on((`a`.`owner_user_id` = `c`.`user_id`))) left join `72crm_crm_customer` `d` on((`a`.`customer_id` = `d`.`customer_id`))) left join `72crm_crm_business` `e` on((`a`.`business_id` = `e`.`business_id`))) left join `72crm_crm_contacts` `f` on((`a`.`contacts_id` = `f`.`contacts_id`))) left join `72crm_admin_user` `g` on((`a`.`company_user_id` = `g`.`user_id`))) left join `fieldcontractview` `z` on((convert(`a`.`batch_id` using utf8mb4) = `z`.`field_batch_id`))) ;
-
--- ----------------------------
--- View structure for customerview
--- ----------------------------
-DROP VIEW IF EXISTS `customerview`;
-CREATE SQL SECURITY DEFINER VIEW `customerview` AS select `a`.`customer_id` AS `customer_id`,`a`.`customer_name` AS `customer_name`,`a`.`followup` AS `followup`,`a`.`is_lock` AS `is_lock`,`a`.`next_time` AS `next_time`,`a`.`deal_status` AS `deal_status`,`a`.`mobile` AS `mobile`,`a`.`telephone` AS `telephone`,`a`.`website` AS `website`,`a`.`remark` AS `remark`,`a`.`create_user_id` AS `create_user_id`,`a`.`owner_user_id` AS `owner_user_id`,`a`.`ro_user_id` AS `ro_user_id`,`a`.`rw_user_id` AS `rw_user_id`,`a`.`address` AS `address`,`a`.`location` AS `location`,`a`.`detail_address` AS `detail_address`,`a`.`lng` AS `lng`,`a`.`lat` AS `lat`,`a`.`create_time` AS `create_time`,`a`.`update_time` AS `update_time`,`a`.`batch_id` AS `batch_id`,`b`.`realname` AS `create_user_name`,`c`.`realname` AS `owner_user_name`,`z`.`客户级别` AS `客户级别`,`z`.`客户来源` AS `客户来源`,`z`.`客户行业` AS `客户行业`,`z`.`field_batch_id` AS `field_batch_id` from (((`72crm_crm_customer` `a` left join `72crm_admin_user` `b` on((`a`.`create_user_id` = `b`.`user_id`))) left join `72crm_admin_user` `c` on((`a`.`owner_user_id` = `c`.`user_id`))) left join `fieldcustomerview` `z` on((convert(`a`.`batch_id` using utf8mb4) = `z`.`field_batch_id`))) ;
-
--- ----------------------------
--- View structure for leadsview
--- ----------------------------
-DROP VIEW IF EXISTS `leadsview`;
-CREATE SQL SECURITY DEFINER VIEW `leadsview` AS select `a`.`leads_id` AS `leads_id`,`a`.`is_transform` AS `is_transform`,`a`.`followup` AS `followup`,`a`.`leads_name` AS `leads_name`,`a`.`customer_id` AS `customer_id`,`a`.`next_time` AS `next_time`,`a`.`telephone` AS `telephone`,`a`.`mobile` AS `mobile`,`a`.`address` AS `address`,`a`.`remark` AS `remark`,`a`.`create_user_id` AS `create_user_id`,`a`.`owner_user_id` AS `owner_user_id`,`a`.`create_time` AS `create_time`,`a`.`update_time` AS `update_time`,`a`.`batch_id` AS `batch_id`,`b`.`realname` AS `create_user_name`,`c`.`realname` AS `owner_user_name`,`z`.`线索来源` AS `线索来源`,`z`.`客户行业` AS `客户行业`,`z`.`客户级别` AS `客户级别`,`z`.`部门` AS `部门`,`z`.`field_batch_id` AS `field_batch_id` from (((`72crm_crm_leads` `a` left join `72crm_admin_user` `b` on((`a`.`create_user_id` = `b`.`user_id`))) left join `72crm_admin_user` `c` on((`a`.`owner_user_id` = `c`.`user_id`))) left join `fieldleadsview` `z` on((convert(`a`.`batch_id` using utf8mb4) = `z`.`field_batch_id`))) ;
-
--- ----------------------------
--- View structure for productview
--- ----------------------------
-DROP VIEW IF EXISTS `productview`;
-CREATE SQL SECURITY DEFINER VIEW `productview` AS select `a`.`product_id` AS `product_id`,`a`.`name` AS `name`,`a`.`num` AS `num`,`a`.`unit` AS `unit`,`a`.`price` AS `price`,`a`.`status` AS `status`,`a`.`category_id` AS `category_id`,`a`.`description` AS `description`,`a`.`create_user_id` AS `create_user_id`,`a`.`owner_user_id` AS `owner_user_id`,`a`.`create_time` AS `create_time`,`a`.`update_time` AS `update_time`,`a`.`batch_id` AS `batch_id`,`b`.`realname` AS `create_user_name`,`c`.`realname` AS `owner_user_name`,`d`.`name` AS `category_name`,`z`.`是否上下架` AS `是否上下架`,`z`.`单位` AS `单位`,`z`.`产品颜色` AS `产品颜色`,`z`.`field_batch_id` AS `field_batch_id` from ((((`72crm_crm_product` `a` left join `72crm_admin_user` `b` on((`a`.`create_user_id` = `b`.`user_id`))) left join `72crm_admin_user` `c` on((`a`.`owner_user_id` = `c`.`user_id`))) left join `72crm_crm_product_category` `d` on((`a`.`category_id` = `d`.`category_id`))) left join `fieldproductview` `z` on((convert(`a`.`batch_id` using utf8mb4) = `z`.`field_batch_id`))) ;
-
--- ----------------------------
--- View structure for receivablesview
--- ----------------------------
-DROP VIEW IF EXISTS `receivablesview`;
-CREATE SQL SECURITY DEFINER VIEW `receivablesview` AS select `a`.`receivables_id` AS `receivables_id`,`a`.`number` AS `number`,`a`.`plan_id` AS `plan_id`,`a`.`customer_id` AS `customer_id`,`a`.`contract_id` AS `contract_id`,`a`.`check_status` AS `check_status`,`a`.`examine_record_id` AS `examine_record_id`,`a`.`return_time` AS `return_time`,`a`.`return_type` AS `return_type`,`a`.`money` AS `money`,`a`.`remark` AS `remark`,`a`.`create_user_id` AS `create_user_id`,`a`.`owner_user_id` AS `owner_user_id`,`a`.`create_time` AS `create_time`,`a`.`update_time` AS `update_time`,`a`.`remarks` AS `remarks`,`a`.`batch_id` AS `batch_id`,`b`.`realname` AS `create_user_name`,`c`.`realname` AS `owner_user_name`,`d`.`customer_name` AS `customer_name`,`e`.`name` AS `contract_name`,`e`.`num` AS `contract_num`,`f`.`num` AS `plan_num`,`z`.`回款方式` AS `回款方式`,`z`.`field_batch_id` AS `field_batch_id` from ((((((`72crm_crm_receivables` `a` left join `72crm_admin_user` `b` on((`a`.`create_user_id` = `b`.`user_id`))) left join `72crm_admin_user` `c` on((`a`.`owner_user_id` = `c`.`user_id`))) left join `72crm_crm_customer` `d` on((`a`.`customer_id` = `d`.`customer_id`))) left join `72crm_crm_contract` `e` on((`a`.`contract_id` = `e`.`contract_id`))) left join `72crm_crm_receivables_plan` `f` on((`a`.`plan_id` = `f`.`plan_id`))) left join `fieldreceivablesview` `z` on((convert(`a`.`batch_id` using utf8mb4) = `z`.`field_batch_id`))) ;
