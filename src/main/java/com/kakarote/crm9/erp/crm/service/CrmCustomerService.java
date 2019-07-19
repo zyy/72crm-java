@@ -724,6 +724,9 @@ public class CrmCustomerService {
                 if (record.getInt("is_null") == 1){
                     record.set("name",record.getStr("name")+"(*)");
                 }
+                if ("map_address".equals(record.getStr("field_name"))){
+                    record.set("name","详细地址");
+                }
             });
             List<String> nameList = fieldList.stream().map(record -> record.getStr("name")).collect(Collectors.toList());
             if (nameList.size() != list.size() || !nameList.containsAll(list)){
@@ -753,7 +756,7 @@ public class CrmCustomerService {
                                 .fluentPut("website", customerList.get(kv.getInt("website")))
                                 .fluentPut("next_time", customerList.get(kv.getInt("next_time")))
                                 .fluentPut("remark", customerList.get(kv.getInt("remark")))
-                                .fluentPut("detail_address", customerList.get(kv.getInt("detail_address")))
+                                .fluentPut("detail_address", customerList.get(kv.getInt("map_address")))
                                 .fluentPut("owner_user_id", ownerUserId));
                     } else if (number > 0 && repeatHandling == 1) {
                         Record leads = Db.findFirst("select customer_id,batch_id from 72crm_crm_customer where customer_name = ?", customerName);
@@ -764,7 +767,7 @@ public class CrmCustomerService {
                                 .fluentPut("website", customerList.get(kv.getInt("website")))
                                 .fluentPut("next_time", customerList.get(kv.getInt("next_time")))
                                 .fluentPut("remark", customerList.get(kv.getInt("remark")))
-                                .fluentPut("detail_address", customerList.get(kv.getInt("detail_address")))
+                                .fluentPut("detail_address", customerList.get(kv.getInt("map_address")))
                                 .fluentPut("owner_user_id", ownerUserId)
                                 .fluentPut("batch_id", leads.getStr("batch_id")));
                     } else if (number > 0 && repeatHandling == 2) {

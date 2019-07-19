@@ -417,7 +417,16 @@ public class AdminSceneService {
             String condition = jsonObject.getString("condition");
             String value = jsonObject.getString("value");
             String name  = jsonObject.getString("name");
-            if(!paramsUtil.isValid(name)||!paramsUtil.isValid(value)){
+            if (!paramsUtil.isValid(name)){
+                return R.error("参数包含非法字段");
+            }
+            if (StrUtil.isNotEmpty(value)&&!paramsUtil.isValid(value)){
+                return R.error("参数包含非法字段");
+            }
+            if (StrUtil.isNotEmpty(jsonObject.getString("start"))&&!paramsUtil.isValid(jsonObject.getString("start"))){
+                return R.error("参数包含非法字段");
+            }
+            if (StrUtil.isNotEmpty(jsonObject.getString("end"))&&!paramsUtil.isValid(jsonObject.getString("end"))){
                 return R.error("参数包含非法字段");
             }
             String formType = jsonObject.getString("formType");
