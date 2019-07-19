@@ -56,3 +56,7 @@ INSERT INTO `72crm_admin_menu` ( `parent_id`, `menu_name`, `realm`, `menu_type`,
 set @wId =  last_insert_id();
 INSERT INTO `72crm_admin_menu` ( `parent_id`, `menu_name`, `realm`, `menu_type`, `sort`, `status`, `remarks`) VALUES ( @wId, '项目设置', 'update', '3', '0', '1', NULL);
 INSERT INTO `72crm_admin_role` (`role_name`, `role_type`, `is_hidden`, `label`) VALUES ('只读', '5', '1','4');
+
+ALTER TABLE `72crm_task`
+MODIFY COLUMN `order_num`  int(4) NULL DEFAULT 999 COMMENT '排序ID' AFTER `is_open`,
+MODIFY COLUMN `top_order_num`  int(4) NULL DEFAULT 999 COMMENT '我的任务排序ID' AFTER `order_num`;
