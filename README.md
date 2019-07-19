@@ -15,7 +15,8 @@
 
 微信交流群：
 
-<img src="https://images.gitee.com/uploads/images/2019/0712/094212_7e03e20f_345098.png" width="400">
+<img src="https://images.gitee.com/uploads/images/2019/0719/102445_23758b72_345098.png" width="400">
+
 
 
 
