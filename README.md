@@ -55,11 +55,10 @@ UI框架：Element-UI 2.6.3
 
 1、配置java运行环境，redis环境，mysql环境。  
 2、将目录doc下的crm9.sql导入到数据库( `初始化安装只需要导入crm9.sql就好了，更新代码导入对应日期的sql文件`)。  
-3、修改`resources/config/crm9-config.txt`下的数据库以及redis的配置文件。  
-4、undertow启动端口号在`resources/config/undertow.txt`下修改。  
+3、修改`resources/config/crm9-config.txt`下的数据库配置文件。
+4、修改`resources/config/redis.json`下的redis连接文件
+5、undertow启动端口号在`resources/config/undertow.txt`下修改。  
 默认账号 admin 默认密码 123456  
-
-
 
 
 
