@@ -16,7 +16,7 @@
 
 微信交流群：
 
-<img src="https://images.gitee.com/uploads/images/2019/1202/135545_33fb94eb_345098.jpeg" width="200">
+<img src="https://images.gitee.com/uploads/images/2019/1221/140107_b3b5735a_345098.png" width="200">
 
 
 关注悟空CRM公众号，了解更多悟空资讯
