@@ -14,9 +14,9 @@
  :tw-1f495: **JAVA版QQ群交流群①群** ：[1026560336](https://shang.qq.com/wpa/qunwpa?idkey=13d5e5809eb9feb350336e55c8b7a00b9cb472078b09b4441222a52dd76b278e)
 
 
-微信交流群：
+扫码添加小悟官方客服微信，邀您加入千人微信交流群：
 
-<img src="https://images.gitee.com/uploads/images/2019/1221/140107_b3b5735a_345098.png" width="200">
+<img src="https://images.gitee.com/uploads/images/2019/1231/115927_f9c580c8_345098.png" width="200">
 
 
 关注悟空CRM公众号，了解更多悟空资讯
